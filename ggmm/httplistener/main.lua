@@ -6,10 +6,10 @@ local port = ...
 
 skynet.start(function()
     local agent = {}
-    for i= 1, 20 do
+    for i= 1, 2 do
         agent[i] = skynet.newservice("httpagent")
     end
-    local balance = 10
+    local balance = 1
     skynet.error("http Listen web port "..port)
     local id = socket.listen("0.0.0.0", port)
     socket.start(id, function(_id, addr)

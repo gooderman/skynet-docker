@@ -27,18 +27,32 @@ function command.init()
 		end
 	end
 	db:exec[[
-		CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY, content);
+	DROP TABLE user;
+	]]
+	db:exec[[
+		CREATE TABLE IF NOT EXISTS user (id INTEGER PRIMARY KEY, name NOT NULL, age INTEGER,intro);
 
-		INSERT INTO test VALUES (NULL, 'Hello World');
-		INSERT INTO test VALUES (NULL, 'Hello Lua');
-		INSERT INTO test VALUES (NULL, 'Hello Sqlite3')
+		INSERT INTO user VALUES (NULL, 'Lisa',10,'Hello Lisa');
+		INSERT INTO user VALUES (NULL, 'Jeep',20,'Hello Jeep');
+		INSERT INTO user VALUES (NULL, 'Eason',20,'Hello Eason');
+		INSERT INTO user VALUES (NULL, 'Ken',22,'Hello Ken');
 		]]
 
 	db:exec[[
-	DELETE FROM test WHERE content='Hello Lua';
+	DELETE FROM user WHERE name like '%en';
+	INSERT INTO user VALUES (NULL, 'King',22,'Hello King');
 	]]
-	for row in db:nrows("SELECT * FROM test") do
-		print(row.id, row.content)
+	print("db: rows------------------------")
+	for row in db:rows("SELECT * FROM user") do
+		print(row[1], row[2],row[3],row[4])
+	end
+	print("db: nrows------------------------")
+	for row in db:nrows("SELECT * FROM user") do
+		print(row.id, row.name,row.age,row.intro)
+	end
+	print("db: urows------------------------")
+	for id,name,age,intro in db:urows("SELECT * FROM user") do
+		print(id, name,age,intro)
 	end
 end
 
