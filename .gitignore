@@ -4,6 +4,7 @@ redis/
 
 docker/mysql/data/
 openresty/*.zip
+docker/openresty/V103-V102-001.zip
 docker/openresty/V300-V200-001.zip
 docker/openresty/V300-V200-002.zip
 docker/openresty/V300-V200-003.zip
@@ -12,3 +13,7 @@ redis-4.0.1.tar.gz
 redis-4.0.1
 mj_server
 lsqlite3_fsl09x
+
+deps/skynet_package/
+
+docker/openresty/boot.zip
