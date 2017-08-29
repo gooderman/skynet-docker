@@ -1,0 +1,35 @@
+
+{
+	"login_dnsname":"ddz.mhhdkj.com",
+	"login_ip":"120.27.147.165",
+	"login_port":8358,
+	"logindurl":"http://ddz.mhhdkj.com:11009",
+	"loginiosdurl":"http://ddz.mhhdkj.com:11009",
+	"recordurl":"http://ddz.mhhdkj.com/MatchLog",
+	"shareURL":"http://ddz.mhhdkj.com/share/huanleddzshare.html",
+	"voiceurl":"http://ddz.mhhdkj.com/",
+	"boot":{
+		"ios":{
+			"url":[
+				"http://ddz.mhhdkj.com/verUpdate/huanleddz_VersionConfig.plist",
+				"http://ddz.mhhdkj.com/verUpdate/huanleddz_VersionConfig.plist"
+			],
+			"bootver":1000,
+			"mainver":1,
+			"mainurl":"http://dwz.cn/",
+			"version":0,
+			"resurl":"http://192.168.0.102"
+		},
+		"android":{
+			"url":[
+				"http://ddz.mhhdkj.com/verUpdate/huanleddz_VersionConfig.plist",
+				"http://ddz.mhhdkj.com/verUpdate/huanleddz_VersionConfig.plist"
+			],
+			"bootver":1000,
+			"mainver":1,
+			"mainurl":"http://ddz.mhhdkj.com/apk/xxx.apk",
+			"version":0,
+			"resurl":"http://192.168.0.102"
+		}
+	}
+}

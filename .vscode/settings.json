@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "fcntl.h": "c"
+    },
+    "editor.mouseWheelScrollSensitivity": 0.2
+}

@@ -1,0 +1,35 @@
+
+{
+	"login_dnsname":"ddz.mhhdkj.com",
+	"login_ip":"120.27.147.165",
+	"login_port":8358,
+	"logindurl":"http://ddz.mhhdkj.com:11009",
+	"loginiosdurl":"http://ddz.mhhdkj.com:11009",
+	"recordurl":"http://ddz.mhhdkj.com/MatchLog",
+	"shareURL":"http://ddz.mhhdkj.com/share/huanleddzshare.html",
+	"voiceurl":"http://ddz.mhhdkj.com/",
+	"boot":{
+		"ios":{
+			"version":0,
+			"url":[
+			    "http://127.0.0.1:80/info.txt",
+			    "http://192.168.0.100:80/info.txt"
+			],
+			"resurl":"http://192.168.0.102",
+			"bootver":1000,
+			"mainver":2,
+			"mainurl":"https://itunes.apple.com/us/developer/tencent-mobile-games/id446324237?mt=8"
+		},
+		"android":{
+			"version":103,
+			"url":[
+			    "http://127.0.0.1:80/info.txt",
+			    "http://192.168.0.100:80/info.txt"
+			],
+			"resurl":"http://192.168.0.102",
+			"bootver":1000,
+			"mainver":0,
+			"mainurl":"http://192.168.0.102/apk/V2.apk"
+		}
+	}
+}

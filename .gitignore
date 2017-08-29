@@ -1,0 +1,14 @@
+
+skynet/
+redis/
+
+docker/mysql/data/
+openresty/*.zip
+docker/openresty/V300-V200-001.zip
+docker/openresty/V300-V200-002.zip
+docker/openresty/V300-V200-003.zip
+
+redis-4.0.1.tar.gz
+redis-4.0.1
+mj_server
+lsqlite3_fsl09x
