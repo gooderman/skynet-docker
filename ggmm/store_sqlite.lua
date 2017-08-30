@@ -1,11 +1,5 @@
 local skynet = require "skynet"
 require "skynet.manager"	-- import skynet.register
-local conf={
-	host = "127.0.0.1",
-	port = 6379,
-	db = 0
-
-}
 local sqlite3 = require "lsqlite3"
 local db = nil
 
@@ -18,8 +12,8 @@ function command.init()
 	print("sqlite3.complete",sqlite3.complete)
 	print("sqlite3.lversion",sqlite3.lversion())
 
-	-- local db = sqlite3.open_memory()
-	local db = sqlite3.open(skynet.getenv("SQLITE_DB_FILE"))
+	--db = sqlite3.open_memory()
+	db = sqlite3.open(skynet.getenv("SQLITE_DB_FILE"))
 	local hastable=false
 	for row in db:nrows("SELECT count(*) AS numb FROM sqlite_master WHERE type='table' AND name='test'") do
 		if(row.numb>0) then

@@ -36,6 +36,14 @@ make clean
 make
 cd ..
 ####################################################
+rm -rf lmu
+git clone https://github.com/gooderman/lmu.git
+cd lmu
+mv Makefile Makefile.bak
+mv Makefile.unqlite Makefile
+make
+cd ..
+####################################################
 
 # VER=redis-4.0.1
 # rm -rf ${VER}.tar.gz
