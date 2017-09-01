@@ -25,7 +25,7 @@ function command.init()
 
 	----------------------------------------------
 	print("db: SET_N S",skynet.now()/100)
-	for i=1,50000 do
+	for i=1,500000 do
 		command.SET('Eason','__eason')
 		command.SET('Jack','__jack')
 	end
@@ -33,7 +33,7 @@ function command.init()
 	----------------------------------------------
 	print("db: SET_N S2",skynet.now()/100)
 	unqlite.begin(db)
-	for i=1,50000 do
+	for i=1,500000 do
 		command.SET('Eason','__eason')
 		command.SET('Jack','__jack')
 	end
