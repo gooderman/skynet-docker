@@ -47,5 +47,5 @@ skynet.start(function()
 			error(string.format("Unknown command %s", tostring(cmd)))
 		end
 	end)
-	skynet.register ".store"
+	skynet.register ".store_redis"
 end)

@@ -42,7 +42,7 @@ function command.init()
 	----------------------------------------------
 	print("db: SET_N S3",skynet.now()/100)
 
-	for i=1,100 do
+	for i=1,10 do
 		unqlite.begin(db)
 		command.SET('Eason','__eason')
 		command.SET('Jack','__jack')
