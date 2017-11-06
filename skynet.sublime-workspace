@@ -4,6 +4,14 @@
 		"selected_items":
 		[
 			[
+				"sk",
+				"skynet\t."
+			],
+			[
+				"stirfo",
+				"string.format(formatstring,···)"
+			],
+			[
 				"skynet",
 				"skynet_package"
 			],
@@ -75,23 +83,6 @@
 	},
 	"buffers":
 	[
-		{
-			"file": "ggmm/agentmgr.lua",
-			"settings":
-			{
-				"buffer_size": 673,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "ggmm/agent.lua",
-			"settings":
-			{
-				"buffer_size": 1149,
-				"line_ending": "Unix"
-			}
-		}
 	],
 	"build_system": "",
 	"build_system_choices":
@@ -100,16 +91,20 @@
 	"build_varint": "",
 	"command_palette":
 	{
-		"height": 127.0,
-		"last_filter": "Package Control: ins",
+		"height": 179.0,
+		"last_filter": "Package Control: in",
 		"selected_items":
 		[
+			[
+				"Package Control: in",
+				"Package Control: Install Package"
+			],
 			[
 				"Package Control: ins",
 				"Package Control: Install Package"
 			]
 		],
-		"width": 692.0
+		"width": 628.0
 	},
 	"console":
 	{
@@ -130,20 +125,56 @@
 	},
 	"expanded_folders":
 	[
-		"/Users/jeep/skynet",
-		"/Users/jeep/skynet/deps",
-		"/Users/jeep/skynet/ggmm",
-		"/Users/jeep/skynet/skynet",
-		"/Users/jeep/skynet/skynet/examples/login",
-		"/Users/jeep/skynet/skynet/lualib-src"
+		"/Users/jeep/skynet"
 	],
 	"file_history":
 	[
+		"/Users/jeep/skynet/install.sh",
+		"/Users/jeep/skynet/ggmm/main.lua",
+		"/Users/jeep/skynet/ggmm/room.lua",
+		"/Users/jeep/skynet/ggmm/agent.lua",
+		"/Users/jeep/skynet/ggmm/majiang.lua",
+		"/Users/jeep/skynet/ggmm/roommgr.lua",
+		"/Users/jeep/skynet/ggmm/agentmgr.lua",
+		"/Users/jeep/skynet/ggmm/auth.lua",
+		"/Users/jeep/skynet/ggmm/mjlib/gen_fengpai.lua",
+		"/Users/jeep/skynet/ggmm/mjlib/zzz/zi_4.lua",
+		"/Users/jeep/skynet/ggmm/mjlib/zzz/zi_5.lua",
+		"/Users/jeep/skynet/ggmm/mjlib/zzz/zi_7.lua",
+		"/Users/jeep/skynet/ggmm/mjlib/zzz/zi_8.lua",
+		"/Users/jeep/skynet/ggmm/mjlib/zzz/zi_2.lua",
+		"/Users/jeep/skynet/ggmm/mjlib/gen_zipai.lua",
+		"/Users/jeep/skynet/ggmm/mjlib/zzz/zi_3.lua",
+		"/Users/jeep/skynet/skynet/lualib/sproto.lua",
+		"/Users/jeep/skynet/gm/agent.lua",
+		"/Users/jeep/skynet/skynet/lualib/skynet.lua",
+		"/Users/jeep/skynet/skynet/service/debug_console.lua",
+		"/Users/jeep/skynet/skynet/3rd/lua/lvm.c",
+		"/Users/jeep/Library/Application Support/Sublime Text 3/Packages/TerminalView/README.md",
+		"/Users/jeep/skynet/ggmm/mjlib/mjlib.lua",
+		"/Users/jeep/skynet/ggmm/watchdog.lua",
+		"/Users/jeep/skynet/ggmm/store_redis.lua",
+		"/Users/jeep/skynet/ggmm/store_sqlite.lua",
+		"/Users/jeep/skynet/ggmm/store_unqlite.lua",
+		"/Users/jeep/skynet/ggmm/httplistener/main.lua",
+		"/Users/jeep/skynet/mj/gen_fengpai.lua",
+		"/Users/jeep/skynet/mj/gen_zipai.lua",
+		"/Users/jeep/skynet/mj/mjlib.lua",
+		"/Users/jeep/skynet/mj/fff/feng_14.lua",
+		"/Users/jeep/skynet/mj/zzz/t11.lua",
+		"/Users/jeep/skynet/mj/zzz/t10.lua",
+		"/Users/jeep/skynet/mj/zzz/t7.lua",
+		"/Users/jeep/skynet/mj/zzz/t8.lua",
+		"/Users/jeep/skynet/mj/zzz/t4.lua",
+		"/Users/jeep/skynet/mj/zzz/__t4.lua",
+		"/Users/jeep/skynet/mj/zzz/__t10.lua",
+		"/Users/jeep/skynet/mj/mjlib_main.lua",
+		"/Users/jeep/skynet/mj/zzz/__t8.lua",
+		"/Users/jeep/skynet/mj/zzz/__t7.lua",
 		"/Users/jeep/skynet/skynet/lualib-src/lua-crypt.c",
 		"/Users/jeep/skynet/skynet/examples/login/client.lua",
 		"/Users/jeep/skynet/skynet/examples/login/logind.lua",
 		"/Users/jeep/skynet/skynet/examples/login/gated.lua",
-		"/Users/jeep/skynet/skynet/lualib/skynet.lua",
 		"/Users/jeep/skynet/skynet/lualib/snax/loginserver.lua",
 		"/Users/jeep/skynet/skynet/examples/login/main.lua",
 		"/Users/jeep/skynet/skynet/examples/login/msgagent.lua",
@@ -161,10 +192,8 @@
 		"/Users/jeep/skynet/skynet/skynet-src/skynet_server.c",
 		"/Users/jeep/skynet/skynet/skynet-src/skynet_handle.c",
 		"/Users/jeep/skynet/skynet/skynet-src/skynet.h",
-		"/Users/jeep/skynet/skynet/service/debug_console.lua",
 		"/Users/jeep/skynet/gm/main.lua",
 		"/Users/jeep/skynet/skynet/service/launcher.lua",
-		"/Users/jeep/skynet/install.sh",
 		"/Users/jeep/skynet/skynet_package_macos_Makefile",
 		"/Users/jeep/skynet/skynet_package/lualib/socket_proxy.lua",
 		"/Users/jeep/skynet/skynet/platform.mk",
@@ -192,7 +221,6 @@
 		"/Users/jeep/skynet/skynet/test/testmysql.lua",
 		"/Users/jeep/skynet/skynet/examples/watchdog.lua",
 		"/Users/jeep/skynet/skynet/examples/config",
-		"/Users/jeep/skynet/gm/agent.lua",
 		"/Users/jeep/skynet/skynet/skynet-src/malloc_hook.c",
 		"/Users/jeep/skynet/skynet-1.0.0/lualib/snax/gateserver.lua",
 		"/Users/jeep/skynet/skynet-1.0.0/service/gate.lua",
@@ -228,49 +256,11 @@
 		"/Users/jeep/skynet/skynet-1.0.0/skynet-src/skynet_monitor.c",
 		"/Users/jeep/skynet/skynet-1.0.0/skynet-src/skynet_mq.h",
 		"/Users/jeep/skynet/gm/simpledb.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/skynet-src/skynet_server.h",
-		"/Users/jeep/skynet/skynet-1.0.0/lualib/skynet/debug.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/lualib/socket.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/lualib-src/lua-socket.c",
-		"/Users/jeep/skynet/skynet-1.0.0/lualib/socketchannel.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/test/testsocket.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/lualib/redis.lua",
-		"/Users/jeep/skynet/redis-3.2.8/redis.conf",
-		"/Users/jeep/skynet/skynet-1.0.0/lualib/dns.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/test/testredis2.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/test/testredis.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/skynet-src/skynet_timer.c",
-		"/Users/jeep/skynet/skynet-1.0.0/3rd/lua/ltablib.c",
-		"/Users/jeep/skynet/skynet-1.0.0/lualib-src/lua-multicast.c",
-		"/Users/jeep/skynet/gm/config",
-		"/Users/jeep/skynet/skynet-1.0.0/examples/simpledb.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/lualib/loader.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/lualib/md5.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/zzzz/watchdog.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/zzzz/agent.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/zzzz/main.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/lualib-src/sproto/lsproto.c",
-		"/Users/jeep/skynet/skynet-1.0.0/zzzz/proto.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/lualib/sproto.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/examples/proto.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/zzzz/config.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/examples/agent.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/zzzz/protoloader.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/zzzz/cmd.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/lualib-src/lua-clientsocket.c",
-		"/Users/jeep/skynet/skynet-1.0.0/service/console.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/start.sh",
-		"/Users/jeep/skynet/skynet-1.0.0/examples/protoloader.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/lualib/sprotoloader.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/zzzz/simpledb.lua",
-		"/Users/jeep/cocos/vv2d-github/226.sublime-project",
-		"/Users/jeep/skynet/skynet-1.0.0/service/cslave.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/lualib/skynet/harbor.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/zzzz/config"
+		"/Users/jeep/skynet/skynet-1.0.0/skynet-src/skynet_server.h"
 	],
 	"find":
 	{
-		"height": 35.0
+		"height": 39.0
 	},
 	"find_in_files":
 	{
@@ -303,6 +293,48 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"majiang",
+			"1236666",
+			"1222234",
+			"decode_package",
+			"host",
+			"docmd",
+			"COMMAND",
+			"call",
+			"9999",
+			"1111444",
+			"ipairs",
+			"t2",
+			"t1",
+			"11114446",
+			"11112444",
+			"1111444",
+			"1111234444",
+			"1111238888",
+			"2222348888",
+			"2222347777",
+			"22223447777",
+			"2222347777",
+			"2347777",
+			"7777",
+			"37777",
+			"7777",
+			"34457777",
+			"13457777",
+			"f12",
+			"1111",
+			"5555",
+			"1111",
+			"234555667778888",
+			"__t2",
+			"1,2",
+			"f10",
+			"__t9",
+			"f9",
+			"8888",
+			"ck",
+			"__t4",
+			"f7",
 			"command_handler",
 			"login_handler",
 			"lhmac64",
@@ -388,49 +420,7 @@
 			"CLOSED",
 			"skynet_send",
 			"lreadstdin",
-			"testmysql",
-			"redis",
-			"read_result",
-			"query_resp",
-			"ip",
-			"dispatch_message",
-			"init_service",
-			"start_func",
-			"dispatch_message",
-			"REG",
-			"proto",
-			"PTYPE_LUA",
-			"lpackstring",
-			"skynet.pack",
-			"PTYPE_LUA",
-			"lsend",
-			"seri",
-			"luaseri_pack",
-			"lsend",
-			"skynet_context_send",
-			"_filter_args",
-			"luaseri_pack",
-			"luaseri_unpack\nluaseri_unpack",
-			"luaseri_unpack",
-			"luaseri_pack",
-			"lsend",
-			"skynet_handle_namehandle",
-			"cmd_reg",
-			"lerror",
-			"_ctrl",
-			"filter_data_",
-			"filter_data",
-			"lfilter",
-			"filter",
-			"gate_create",
-			"gate",
-			"send_request",
-			"forward_message_tcp",
-			"skynet_socket_poll",
-			"overload_threshold",
-			"_filter_args",
-			"G_NODE",
-			"skynet_command"
+			"testmysql"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -452,73 +442,14 @@
 	"groups":
 	[
 		{
-			"selected": 0,
 			"sheets":
 			[
-				{
-					"buffer": 0,
-					"file": "ggmm/agentmgr.lua",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 673,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								513,
-								513
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Lua/Lua.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "ggmm/agent.lua",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1149,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Lua/Lua.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				}
 			]
 		}
 	],
 	"incremental_find":
 	{
-		"height": 25.0
+		"height": 23.0
 	},
 	"input":
 	{
@@ -559,7 +490,7 @@
 	"project": "skynet.sublime-project",
 	"replace":
 	{
-		"height": 46.0
+		"height": 42.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -568,6 +499,26 @@
 		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"majiang",
+				"ggmm/majiang.lua"
+			],
+			[
+				"sproto",
+				"skynet/lualib/sproto.lua"
+			],
+			[
+				"skynet",
+				"skynet/lualib/skynet.lua"
+			],
+			[
+				"debugcon",
+				"skynet/service/debug_console.lua"
+			],
+			[
+				"ksynet",
+				"skynet/lualib/skynet.lua"
+			],
 			[
 				"loginse",
 				"skynet/lualib/snax/loginserver.lua"
@@ -593,10 +544,6 @@
 				"skynet/lualib-src/lua-skynet.c"
 			],
 			[
-				"skynet",
-				"skynet/lualib/skynet.lua"
-			],
-			[
 				"crypt",
 				"skynet/lualib-src/lua-crypt.c"
 			],
@@ -615,10 +562,6 @@
 			[
 				"skynet.c",
 				"skynet/lualib-src/lua-skynet.c"
-			],
-			[
-				"ksynet",
-				"skynet/lualib/skynet.lua"
 			],
 			[
 				"launcher",
@@ -1067,18 +1010,6 @@
 			[
 				"sdkd",
 				"sdk/ios/sdk/sdkdef.h"
-			],
-			[
-				"joinn",
-				"project/pdk/scripts/app/scenes/JoinNode.lua"
-			],
-			[
-				"app",
-				"player/proj.win32/app.cpp"
-			],
-			[
-				"cmd",
-				"project/pdk/scripts/app/logic/Cmd.lua"
 			]
 		],
 		"width": 0.0
@@ -1098,8 +1029,8 @@
 	},
 	"select_symbol":
 	{
-		"height": 47.0,
-		"last_filter": "skynet_socket_poll",
+		"height": 392.0,
+		"last_filter": "",
 		"selected_items":
 		[
 			[
@@ -1107,7 +1038,7 @@
 				"skynet_socket_poll"
 			]
 		],
-		"width": 422.0
+		"width": 392.0
 	},
 	"selected_group": 0,
 	"settings":
@@ -1117,7 +1048,7 @@
 	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 311.0,
+	"side_bar_width": 294.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{
