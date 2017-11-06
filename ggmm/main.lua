@@ -13,13 +13,15 @@ skynet.start(function()
 
 	skynet.newservice("httplistener", skynet.getenv("LOGIN_WEB_PORT"))
 
-	-- store_sqlite = skynet.uniqueservice("store_sqlite")
+	store_sqlite = skynet.uniqueservice("store_sqlite")
 	-- store_unqlite = skynet.uniqueservice("store_unqlite")
 	-- store_redis = skynet.uniqueservice("store_redis")
 	-- store_mysql = skynet.uniqueservice("store_mysql")
+	skynet.uniqueservice("protoloader")
 	majiang = skynet.uniqueservice('majiang')
 	auth = skynet.uniqueservice("auth")
 	agentMgr = skynet.uniqueservice("agentmgr")
 	watchDog = skynet.uniqueservice("watchdog")
 	skynet.newservice("room")
+
 end)
