@@ -127,12 +127,18 @@ local function loop()
 end
 ------------------------------------------------------------
 ------------------------------------------------------------
-local owner = {}
+local owner = 0
 local agents = {}
-local info = {}
+local users = {}
+local args = {}
 local CMD = {}
 --create init 
-function CMD.init(owner,args)
+--room = {owner = userid,args = args,users={userid}}
+function CMD.init(room)
+	owner = room.owner
+	args = room.args
+	users = room.users
+	return true
 end
 --user join
 function CMD.join(userinfo)
@@ -145,6 +151,10 @@ function CMD.enter(userid)
 end
 --
 function CMD.exit(userid)
+end
+
+function CMD.close()
+	skynet.exit()
 end
 
 local PCMD = {}

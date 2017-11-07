@@ -1,6 +1,9 @@
 local skynet = require "skynet"
 local crypt = require "skynet.crypt"
 local proxy = require "socket_proxy"
+local util = require "util"
+
+local store_sqlite
 
 local sproto = require "sproto"
 local sprotoloader = require "sprotoloader"
@@ -39,7 +42,7 @@ local function decode_request(msg)
 		local rsp = COMMAND[cmd](data)
 		if(response) then
 			local reqdata = response(rsp,ud)
-			skynet.error('agent response ',string.len(reqdata))
+			-- skynet.error('agent response ',string.len(reqdata))
 			write(fd,reqdata,string.len(reqdata))
 		end
 	end
@@ -58,18 +61,43 @@ local function loop()
 		end
 	end
 end
+function COMMAND.close(msg)
+	skynet.error(msg)
+	skynet.send(agentMgr,'lua','agent-closed',fd)
+	proxy.close(fd)
+	skynet.exit()
+end
 function COMMAND.heartup(data)
 	heartupid = heartupid + 1
 	local t = {id = heartupid}
 	return t
 end
-
-function COMMAND.createRoom(data)
-	local r = skynet.call('roommgr','lua','newroom',userinfo.userid,data)
+function COMMAND.login(data)
+	util.dump(data,'cmd.login')
+	userinfo = data.player
+	local userdb = skynet.call(store_sqlite,'lua','get_user',userinfo)
+	if(not userdb) then
+		userdb = skynet.call(store_sqlite,'lua','new_user',userinfo)
+	end
+	if(userdb) then
+		return {result=0,player=userdb}
+	else
+		skynet.fork(function()
+				COMMAND.close("login fail close")
+			end)
+		return {result=1}
+	end
+end
+-- function COMMAND.auth(data)
+-- 	dump(data,'cmd.auth')
+-- 	return {key='0'}
+-- end
+function COMMAND.newroom(data)
+	local roomid,args = skynet.call('roommgr','lua','newroom',userinfo.userid,data)
 	return r
 end
 
-function COMMAND.joinRoom(data)
+function COMMAND.joinroom(data)
 	local r = skynet.call('roommgr','lua','joinroom',userinfo.userid,data)
 	return r
 end
@@ -90,6 +118,8 @@ skynet.start(function()
 			return d,c
 		end
 	end
+
+	store_sqlite = skynet.uniqueservice("store_sqlite")
 
 	skynet.dispatch('lua',function(session, source, cmd,_fd,_addr,_ip)
 		if(cmd=='init') then

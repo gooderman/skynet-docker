@@ -7,17 +7,25 @@ local str =
 }
 
 .Player {
- openid 0 : string
- imgurl 1 : string
- gender 2 : integer
+     id 0 : integer
+     openid 1 : string
+     name 2 : string
+     gender 3 : integer
+     headimg 4 : string
+     platform 5 : string
+     os 6 : string
+     device 7 : string
+     uuid 8 : string
+     createtime 9 : integer
 }
 
 login 1 {
  request {
-     openid 0 : string
+     player 0 : Player
  }
  response {
-     player 0 : Player
+    result 0 : integer
+    player 1 : Player
  }
 }
 

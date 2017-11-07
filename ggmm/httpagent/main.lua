@@ -7,8 +7,8 @@ local command = require "httpagent.cmd"
 local util = require "util"
 
 local function response(id, code, msg, ...)
-    print("web返回")
-    print(msg)
+    skynet.error("web返回")
+    skynet.error(msg)
     local data = msg
     local ok, err = httpd.write_response(sockethelper.writefunc(id), code, data, ...)
     if not ok then
@@ -26,7 +26,7 @@ local function handle(id)
         return
     end
 
-    util.dump(header,"header")
+    -- util.dump(header,"header")
     
     if url=='/login' then
     elseif url=='/check' then

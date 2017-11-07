@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 ]]
+local skynet = require "skynet"
 require "functions"
 local M ={}
 
@@ -111,7 +112,9 @@ function M.dump(value, desciption, nesting)
     end
 
     local traceback = string.split(debug.traceback("", 2), "\n")
-    print("dump from: " .. string.trim(traceback[3]))
+    -- print("dump from: " .. string.trim(traceback[3]))
+    local info = "dump from: " .. string.trim(traceback[3])
+
 
     local function _dump(value, desciption, indent, nest, keylen)
         desciption = desciption or "<var>"
@@ -157,8 +160,10 @@ function M.dump(value, desciption, nesting)
     _dump(value, desciption, "- ", 1)
 
     for i, line in ipairs(result) do
-        print(line)
+        -- print(line)
+        info = info .. '\n'..line
     end
+    skynet.error(info)
 end
 
 return M

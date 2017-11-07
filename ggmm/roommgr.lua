@@ -12,12 +12,12 @@ function CMD.gen_roomid(userid)
 end
 function CMD.newroom(userid,args)
 	local roomid = CMD.gen_roomid(userid)
-	local room = {owner = userid,args = args}
-	room.addr = skynet.newservice("room")
-
+	local room = {owner = userid,args = args,users={userid}}
+	local addr = skynet.newservice("room")
+	skynet.call(addr,'lua','init',room)
+	room.addr = addr
 	rooms[roomid] = room
 	roomaddr[addr] = roomid
-	
 	return roomid,args
 end	
 function CMD.addroom(roomid)
