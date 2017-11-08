@@ -131,6 +131,22 @@ local function f4()
         end
     end
     -------------------------------
+    r={}
+    local rr1 = {}
+    for _,k1 in pairs(t3) do
+        for _,k2 in pairs(t1) do
+            table.insert(r,k1..k2)
+        end
+    end
+    for _,s in ipairs(r) do
+        local f,rs =  ck4(s) --四个必定无法胡过滤掉 癞子例外吗？？？
+        if(f) then
+            -- table.insert(rr,rs)
+            if(not rr2[rs]) then
+                rr2[rs]=-1 --将 
+            end
+        end
+    end
     -------------------------------
     local nn=0
     for k,v in pairs(rr2) do

@@ -4,6 +4,10 @@
 		"selected_items":
 		[
 			[
+				"fun",
+				"function\t."
+			],
+			[
 				"sk",
 				"skynet\t."
 			],
@@ -74,15 +78,55 @@
 			[
 				"display",
 				"display.cx\t."
-			],
-			[
-				"fun",
-				"function\tfunction"
 			]
 		]
 	},
 	"buffers":
 	[
+		{
+			"file": "ggmm/store_sqlite.lua",
+			"settings":
+			{
+				"buffer_size": 4890,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ggmm/agentmgr.lua",
+			"settings":
+			{
+				"buffer_size": 832,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ggmm/main.lua",
+			"settings":
+			{
+				"buffer_size": 757,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ggmm/protodata.lua",
+			"settings":
+			{
+				"buffer_size": 736,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "ggmm/agent.lua",
+			"settings":
+			{
+				"buffer_size": 2987,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		}
 	],
 	"build_system": "",
 	"build_system_choices":
@@ -129,6 +173,18 @@
 	],
 	"file_history":
 	[
+		"/Users/jeep/skynet/ggmm/config",
+		"/Users/jeep/skynet/deps/skynet_package/lualib/socket_proxy.lua",
+		"/Users/jeep/skynet/deps/lsqlite3_fsl09x/examples/tracing.lua",
+		"/Users/jeep/skynet/deps/lsqlite3_fsl09x/examples/simple.lua",
+		"/Users/jeep/skynet/deps/lsqlite3_fsl09x/examples/smart.lua",
+		"/Users/jeep/skynet/deps/lsqlite3_fsl09x/examples/function.lua",
+		"/Users/jeep/skynet/deps/lsqlite3_fsl09x/examples/update_hook.lua",
+		"/Users/jeep/skynet/deps/lsqlite3_fsl09x/examples/aggregate.lua",
+		"/Users/jeep/skynet/deps/lsqlite3_fsl09x/examples/hooks_advanced.lua",
+		"/Users/jeep/skynet/deps/lsqlite3_fsl09x/examples/order.lua",
+		"/Users/jeep/skynet/deps/lsqlite3_fsl09x/examples/statement.lua",
+		"/Users/jeep/skynet/deps/lsqlite3_fsl09x/doc/lsqlite3.wiki",
 		"/Users/jeep/skynet/install.sh",
 		"/Users/jeep/skynet/ggmm/main.lua",
 		"/Users/jeep/skynet/ggmm/room.lua",
@@ -244,19 +300,7 @@
 		"/Users/jeep/skynet/skynet-1.0.0/skynet-src/skynet_socket.c",
 		"/Users/jeep/skynet/skynet-1.0.0/service/launcher.lua",
 		"/Users/jeep/skynet/skynet-1.0.0/skynet-src/skynet_main.c",
-		"/Users/jeep/skynet/skynet-1.0.0/service-src/service_gate.c",
-		"/Users/jeep/skynet/skynet-1.0.0/lualib-src/lua-netpack.c",
-		"/Users/jeep/skynet/skynet-1.0.0/service-src/service_snlua.c",
-		"/Users/jeep/skynet/skynet-1.0.0/skynet-src/socket_server.c",
-		"/Users/jeep/skynet/skynet-1.0.0/skynet-src/socket_server.h",
-		"/Users/jeep/skynet/skynet-1.0.0/service-src/service_harbor.c",
-		"/Users/jeep/skynet/skynet-1.0.0/skynet-src/skynet_socket.h",
-		"/Users/jeep/skynet/skynet-1.0.0/skynet-src/atomic.h",
-		"/Users/jeep/skynet/skynet-1.0.0/skynet-src/spinlock.h",
-		"/Users/jeep/skynet/skynet-1.0.0/skynet-src/skynet_monitor.c",
-		"/Users/jeep/skynet/skynet-1.0.0/skynet-src/skynet_mq.h",
-		"/Users/jeep/skynet/gm/simpledb.lua",
-		"/Users/jeep/skynet/skynet-1.0.0/skynet-src/skynet_server.h"
+		"/Users/jeep/skynet/skynet-1.0.0/service-src/service_gate.c"
 	],
 	"find":
 	{
@@ -293,6 +337,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"store_sqlite",
 			"majiang",
 			"1236666",
 			"1222234",
@@ -419,8 +464,7 @@
 			"service_exit",
 			"CLOSED",
 			"skynet_send",
-			"lreadstdin",
-			"testmysql"
+			"lreadstdin"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -442,8 +486,155 @@
 	"groups":
 	[
 		{
+			"selected": 0,
 			"sheets":
 			[
+				{
+					"buffer": 0,
+					"file": "ggmm/store_sqlite.lua",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4890,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3554,
+								3556
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Lua/Lua.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 1525.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "ggmm/agentmgr.lua",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 832,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Lua/Lua.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "ggmm/main.lua",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 757,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								162,
+								162
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Lua/Lua.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "ggmm/protodata.lua",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 736,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								230,
+								230
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Lua/Lua.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "ggmm/agent.lua",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2987,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1916,
+								1916
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Lua/Lua.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 264.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				}
 			]
 		}
 	],
@@ -499,6 +690,10 @@
 		"last_filter": "",
 		"selected_items":
 		[
+			[
+				"proxy",
+				"deps/skynet_package/lualib/socket_proxy.lua"
+			],
 			[
 				"majiang",
 				"ggmm/majiang.lua"
@@ -1006,10 +1201,6 @@
 			[
 				"short",
 				"framework/framework/shortcodes.lua"
-			],
-			[
-				"sdkd",
-				"sdk/ios/sdk/sdkdef.h"
 			]
 		],
 		"width": 0.0
@@ -1048,7 +1239,7 @@
 	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 294.0,
+	"side_bar_width": 247.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{

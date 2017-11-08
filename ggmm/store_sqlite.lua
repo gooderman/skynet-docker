@@ -99,6 +99,13 @@ function command.init()
 	-- 	print(id, name,age,intro)
 	-- end
 end
+local stmt_newuser
+local sql_newuser = "INSERT INTO user VALUES (NULL, :openid, :name, :gender, :headimg, :platform, :os, :device, :uuid, :createtime)"
+local stmt_upduser
+local sql_upduser = "UPDATE user SET name = :name, gender = :gender, headimg = :headimg WHERE openid = :openid"
+local stmt_delalluser
+local sql_delalluser = "DELETE FROM user WHERE id>0"
+
 
 function command.get_user(user)
 	local sql
@@ -110,17 +117,18 @@ function command.get_user(user)
 	if(sql) then
 		for row in db:nrows(sql) do
 			skynet.error("get_user succ",row.id,row.name)
-			return row
+			command.upd_user(user)
+			for row in db:nrows(sql) do
+				return row
+			end
 		end
 	end
 	return 
 end
 
-local stmt_newuser
-local sql = "INSERT INTO user VALUES (NULL, :openid, :name, :gender, :headimg, :platform, :os, :device, :uuid, :createtime)"
 function command.new_user(user)
 	skynet.error("new_user ",user.openid,user.name)
-	stmt_newuser = stmt_newuser or db:prepare(sql)
+	stmt_newuser = stmt_newuser or db:prepare(sql_newuser)
 	stmt_newuser:bind_names{ 
 		openid = user.openid,  
 		name = user.name,
@@ -137,6 +145,28 @@ function command.new_user(user)
 	return command.get_user(user)
 end
 
+function command.upd_user(user)
+	skynet.error("upd_user ",user.openid,user.name)
+	stmt_upduser = stmt_upduser or db:prepare(sql_upduser)
+	stmt_upduser:bind_names{ 
+		openid = user.openid, 
+		name = user.name,
+		gender = user.gender,
+		headimg = user.headimg,
+	}
+	stmt_upduser:step()
+	stmt_upduser:reset()
+	return true
+end
+
+function command.del_alluser()
+	skynet.error("del_alluser ")
+	stmt_delalluser = stmt_delalluser or db:prepare(sql_delalluser)
+	stmt_delalluser:step()
+	stmt_delalluser:reset()
+	return true
+end
+
 skynet.start(function()
 	skynet.dispatch("lua", function(session, address, cmd, ...)
 		local f = command[cmd]
@@ -148,4 +178,5 @@ skynet.start(function()
 	end)
 	skynet.register ".store_sqlite"
 	command.init()
+	-- command.del_alluser()
 end)
