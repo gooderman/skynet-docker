@@ -313,7 +313,8 @@ function tabletofile(tb,path)
             ttss = ttss.."}"
             line = string.format("[\"%s\"] = %s,\n",k,ttss)
         elseif(type(v)=='number') then
-            line = string.format("[\"%s\"] = %d,\n",k,v)
+            -- line = string.format("[\"%s\"] = %d,\n",k,v)
+            line = string.format("[%s] = %d,\n",k,v)
         end
         sss = sss .. line
         i=1+1
@@ -342,22 +343,47 @@ local tb = {
     [11]=__t11,
     [12]=__t12,
     [14]=__t14,
-    [15]=__t15,
-    [17]=__t17,
-    [18]=__t18,
-    [20]=__t20,
+    -- [15]=__t15,
+    -- [17]=__t17,
+    -- [18]=__t18,
+    -- [20]=__t20,
 }
 
 
+-- for k,v in pairs(tb) do
+--     if(v) then
+--         print("tablefofile",k)
+--         local ppp = string.format("zi_%d.lua",k)
+--         ppp = path..ppp
+--         os.execute("rm -f "..ppp)
+--         tabletofile(v,ppp) 
+--     end
+-- end  
+
+local b = {
+    1,10,100,
+    1000,10000,100000,
+    1000000,10000000,100000000
+}
+local vvv = {}
 for k,v in pairs(tb) do
     if(v) then
-        print("tablefofile",k)
-        local ppp = string.format("zi_%d.lua",k)
-        ppp = path..ppp
-        os.execute("rm -f "..ppp)
-        tabletofile(v,ppp) 
+        for kk,vv in pairs(v) do
+            local len = kk:len()
+            local ii = 0
+            for i=1,len do
+                local v = kk:byte(i)-0x30
+                ii = ii+b[v]
+            end
+            vvv[ii] = vv
+        end
     end
 end    
+local ppp = "zi_all.lua"
+ppp = path..ppp
+print("tablefofile",ppp)
+os.execute("rm -f "..ppp)
+tabletofile(vvv,ppp) 
 -- tabletofile(__t4,path..'__t4.lua')
 -- tabletofile(__t5,path..'__t5.lua')
 -- tabletofile(__t6,path..'__t6.lua')

@@ -7,29 +7,32 @@ local util = require "util"
 require "functions"
 
 local a = os.clock()
-local z2 = require "mjlib.zzz.zi_2"
-local z3 = require "mjlib.zzz.zi_3"
-local z5 = require "mjlib.zzz.zi_5"
-local z6 = require "mjlib.zzz.zi_6"
-local z8 = require "mjlib.zzz.zi_8"
-local z9 = require "mjlib.zzz.zi_9"
-local z11 = require "mjlib.zzz.zi_11"
-local z12 = require "mjlib.zzz.zi_12"
-local z14 = require "mjlib.zzz.zi_14"
+-- local z2 = require "mjlib.zzz.zi_2"
+-- local z3 = require "mjlib.zzz.zi_3"
+-- local z5 = require "mjlib.zzz.zi_5"
+-- local z6 = require "mjlib.zzz.zi_6"
+-- local z8 = require "mjlib.zzz.zi_8"
+-- local z9 = require "mjlib.zzz.zi_9"
+-- local z11 = require "mjlib.zzz.zi_11"
+-- local z12 = require "mjlib.zzz.zi_12"
+-- local z14 = require "mjlib.zzz.zi_14"
+local zall = require "mjlib.zzz.zi_all"
+
 -- local z15 = require "mjlib.zzz.zi_15"
 -- local z17 = require "mjlib.zzz.zi_17"
 -- local z18 = require "mjlib.zzz.zi_18"
 -- local z20 = require "mjlib.zzz.zi_20"
 
-local f2 = require "mjlib.fff.feng_2"
-local f3 = require "mjlib.fff.feng_3"
-local f5 = require "mjlib.fff.feng_5"
-local f6 = require "mjlib.fff.feng_6"
-local f8 = require "mjlib.fff.feng_8"
-local f9 = require "mjlib.fff.feng_9"
-local f11 = require "mjlib.fff.feng_11"
-local f12 = require "mjlib.fff.feng_12"
-local f14 = require "mjlib.fff.feng_14"
+-- local f2 = require "mjlib.fff.feng_2"
+-- local f3 = require "mjlib.fff.feng_3"
+-- local f5 = require "mjlib.fff.feng_5"
+-- local f6 = require "mjlib.fff.feng_6"
+-- local f8 = require "mjlib.fff.feng_8"
+-- local f9 = require "mjlib.fff.feng_9"
+-- local f11 = require "mjlib.fff.feng_11"
+-- local f12 = require "mjlib.fff.feng_12"
+-- local f14 = require "mjlib.fff.feng_14"
+local fall = require "mjlib.fff.feng_all"
 -- local f15 = require "mjlib.fff.feng_15"
 -- local f17 = require "mjlib.fff.feng_17"
 -- local f18 = require "mjlib.fff.feng_18"
@@ -39,12 +42,12 @@ local b = os.clock()
 skynet.error("majiang load",b-a)
 
 
-local zipai={
-	{},z2,z3,{},z5,z6,{},z8,z9,{},z11,z12,{},z14
-}
-local fengpai={
-	{},f2,f3,{},f5,f6,{},f8,f9,{},f11,f12,{},f14
-}
+-- local zipai={
+-- 	{},z2,z3,{},z5,z6,{},z8,z9,{},z11,z12,{},z14
+-- }
+-- local fengpai={
+-- 	{},f2,f3,{},f5,f6,{},f8,f9,{},f11,f12,{},f14
+-- }
 
 
 -- local builder = require "skynet.datasheet.builder"
@@ -64,27 +67,18 @@ end
 function CMD.get(paitp,key)
 	local t
 	if(paitp>=1 and paitp<=3) then
-		t = zipai
+		t = zall
 	else
-		t = fengpai
+		t = fall
 	end
 	if(type(key)=='table') then
 		local rr = {}
 		for i,k in ipairs(key) do
-			local n = string.len(k)
-			if(t[n]) then
-				rr[i] = t[n][k] or false
-			else
-				rr[i] = false
-			end
+			rr[i] = t[k] or false
 		end 
 		return rr
 	else
-		local n = string.len(key)
-		local r
-		if(t[n]) then
-			r = t[n][key]
-		end
+		r = t[key]  or false
 		return r
 	end
 end
@@ -95,6 +89,11 @@ local function copytb(tp,t)
 	end
 	return r
 end
+local BB = {
+	1,10,100,
+	1000,10000,100000,
+	1000000,10000000,100000000
+}
 function CMD.ting(pai)
 	local cc={0,1,1,0,1,1,0,1,1,0,1,1,0,1, 1,0,1,1,0,1}
 	cc[0] = 1
@@ -110,7 +109,7 @@ function CMD.ting(pai)
 		if cc[ct] == 0 then
 			n = n+1
 			if(n>2) then
-				return false
+				return false,1
 			end
 		end
 	end
@@ -136,20 +135,27 @@ function CMD.ting(pai)
 	local rr = {}
 	local p_out = 0
 	local p_in = 0
+if(true) then	
 	--迭代自己+-
 	for i=1,4 do
-		if(tc[i]>0) then
-			local cktb = clone(pai)
-			for m=1,9 do
-				local cktb2 = clone(cktb)
-				if mjlib.sub(cktb2,i,m) then
+		local vb = t[i]
+		local v = vb
+		if(v>0) then
+			for m=9,1,-1 do
+				local v1 = math.floor(v/BB[m])
+				v = v - v1*BB[m]
+				if v1>0 then
+					local v2 = vb - BB[m]
 					p_out = mjlib.combine(i,m)
-					local cktb3 = clone(cktb2)
-					for n=1,9 do
-						local cktb4 = clone(cktb3)
-						mjlib.add(cktb4,i,n)
-						p_in = mjlib.combine(i,n)
-						if(CMD.hu(cktb4)) then
+					---------------------------	
+					local vv = vb
+					for n=9,1,-1 do
+						local v3 = v2+BB[n]
+						local tcp = {t[1],t[2],t[3],t[4]}
+						tcp[i]=v3 
+						-- skynet.error(i,m,n,v3)
+						if(CMD.hu2(tcp)) then							
+							p_in = mjlib.combine(i,n)
 							table.insert(rr,p_out.."--"..p_in)
 						end
 					end
@@ -157,43 +163,45 @@ function CMD.ting(pai)
 			end
 		end
 	end
+end	
 if(true) then
 	--迭代自己-其他+
 	for i=1,4 do
-		local tbsub = t[i]
+		local vb = t[i]
+		local v = vb
 		--可减
-		if(ot[i][1]>0 and tc[i]>0) then
-			local ss = mjlib.tb2str(t[i])
+		if(ot[i][1]>0 and vb>0) then
 			--逐个sub
-			for m=1,tc[i] do
-				local s = ss
-				p_out = mjlib.combine(i,tbsub[m])
-				s = string.sub(s,1,m-1)..string.sub(s,m+1)
-				-- skynet.error('CMD.s[m]',i,s)
-				--检测有效
-				if CMD.get(i,s) then
-					local cktb = clone(pai)
-					mjlib.sub(cktb,i,tbsub[m])
-					--逐一尝试
-					for j=1,4 do
-						local cktb2 = clone(cktb)
-						--可加
-						if (ot[j][2]>0 and tc[j]>0) then
-							--逐个add
-							local cktb3 = clone(cktb2)
-							for k=1,9 do
-								p_in = mjlib.combine(j,k)
-								local cktb4 = clone(cktb3)
-								mjlib.add(cktb4,j,k)
-								if(CMD.hu(cktb4)) then
-									table.insert(rr,p_out.."--"..p_in)
+			local v = t[i]
+			for m=9,1,-1 do
+				local v1 = math.floor(v/BB[m])
+				v = v - v1*BB[m]
+				if v1>0 then
+					local v2 = vb - BB[m]
+					--检测有效
+					if CMD.get(i,v2) then
+						p_out = mjlib.combine(i,m)
+						--逐一尝试
+						for j=1,4 do
+							--可加
+							if (ot[j][2]>0 and t[j]>0 and i~=j) then
+								--逐个add
+								for n=1,9 do
+									local v3 = BB[n]
+									local tcp = {t[1],t[2],t[3],t[4]}
+									tcp[i]=v2
+									tcp[j]=tcp[j] + v3 
+									if(CMD.hu2(tcp)) then
+										p_in = mjlib.combine(j,n)
+										table.insert(rr,p_out.."--"..p_in)
+									end
 								end
 							end
 						end
+					else
+							
 					end
-				else
-						
-				end
+				end	
 			end
 		end	
 	end
@@ -203,14 +211,43 @@ end
 	end
 end
 
-function CMD.hu(pai)
-	local t,tc = mjlib.tongji(pai)
-	local ts={}
+function CMD.hu2(t)
 	local flag = true
 	local jc = 0
+	-- util.dump(t,"CMD.hu")
+	-- skynet.error(mjlib.i2str(t[1]))
+	-- skynet.error(mjlib.i2str(t[2]))
+	-- skynet.error(mjlib.i2str(t[3]))
+	-- skynet.error(mjlib.i2str(t[4]))
 	for i=1,4 do
-		if tc[i]>0 then
-			local key = mjlib.tb2str(t[i])
+		if t[i]>0 then
+			-- local key = mjlib.i2str(t[i])
+			local key = t[i]
+			local r  = CMD.get(i,key)
+			if(not r) then
+				flag = false
+				break
+			else
+				jc = jc + r
+			end
+		end
+	end
+	return flag and jc==1
+end
+
+function CMD.hu(pai)
+	local t,_= mjlib.tongji(pai)
+	local flag = true
+	local jc = 0
+	-- util.dump(t,"CMD.hu")
+	-- skynet.error(mjlib.i2str(t[1]))
+	-- skynet.error(mjlib.i2str(t[2]))
+	-- skynet.error(mjlib.i2str(t[3]))
+	-- skynet.error(mjlib.i2str(t[4]))
+	for i=1,4 do
+		if t[i]>0 then
+			-- local key = mjlib.i2str(t[i])
+			local key = t[i]
 			local r  = CMD.get(i,key)
 			if(not r) then
 				flag = false
@@ -224,16 +261,19 @@ function CMD.hu(pai)
 end
 local function test()
 	local ttt ={
-		1,2,3, 3,4,5, 31,31,31, 11,12,13, 20,20
+		1,2,3, 4,5,6, 31,31,31, 11,12,13, 20,20
 	}
 	local ta = skynet.now()
-	local r = CMD.hu(ttt)
+	local r
+	for i=1,100000 do
+		r = CMD.hu(ttt)
+	end
 	local tb = skynet.now()
 	skynet.error("call CMD.hu = ",r , " tm =",(tb-ta)*10)
 
 	local ta = skynet.now()
 	local r
-	for i=1,1000 do
+	for i=1,10000 do
 		r = CMD.ting(ttt)
 	end
 	local tb = skynet.now()

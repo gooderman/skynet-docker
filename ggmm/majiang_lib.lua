@@ -37,29 +37,48 @@ local function combine(tp,id)
 	return (tp-1)*9+id
 end
 local function tongji(tb)
-	local r={}
-	r[0]={}
-	r[1]={}
-	r[2]={}
-	r[3]={}
-	r[4]={}
-	if(#tb>=2) then
-		table.sort(tb,function(a,b)
-			return a<b
-		end)
-	end
+	local b = {
+		1,10,100,
+		1000,10000,100000,
+		1000000,10000000,100000000
+	}
+	local r={0,0,0,0}
+	local rc = {0,0,0,0}
+	-- if(#tb>=2) then
+	-- 	table.sort(tb,function(a,b)
+	-- 		return a<b
+	-- 	end)
+	-- end
 	for _,id in ipairs(tb) do
 		local tp,idx = parse(id)
-		if(tp and idx) then
-			table.insert(r[tp],idx)
+		if(tp>0 and idx) then
+			r[tp] = r[tp] + b[idx]
+			rc[tp] = rc[tp] + 1
 		end
 	end
-	return r,{#r[1],#r[2],#r[3],#r[4]}
+	return r,rc
 end
 local function tb2str(tb)
 	local s=''
 	for _,id in ipairs(tb) do
 		s=s..id
+	end
+	return s
+end
+local function i2str(v)
+	local b = {
+		1,10,100,
+		1000,10000,100000,
+		1000000,10000000,100000000
+	}
+	local s = ""
+	local t = 0
+	for i=9,1,-1 do
+		t =  math.floor(v/b[i])
+		if(t>0) then
+			s = string.rep(i,t)..s
+			v = v - t*b[i]
+		end
 	end
 	return s
 end
@@ -106,6 +125,8 @@ mj.combine = combine
 mj.tongji = tongji
 --转换字窜
 mj.tb2str = tb2str
+--转换字窜
+mj.i2str = i2str
 --插入
 mj.check = check
 mj.sub = sub
