@@ -224,16 +224,19 @@ function CMD.hu(pai)
 end
 local function test()
 	local ttt ={
-		1,2,3, 3,4,5, 31,31,31, 11,12,13, 20,20
+		1,2,3, 4,5,6, 31,31,31, 11,12,13, 20,20
 	}
 	local ta = skynet.now()
-	local r = CMD.hu(ttt)
+	local r
+	for i=1,100000 do
+		r = CMD.hu(ttt)
+	end
 	local tb = skynet.now()
 	skynet.error("call CMD.hu = ",r , " tm =",(tb-ta)*10)
 
 	local ta = skynet.now()
 	local r
-	for i=1,1000 do
+	for i=1,10000 do
 		r = CMD.ting(ttt)
 	end
 	local tb = skynet.now()
