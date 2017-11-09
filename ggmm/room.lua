@@ -9,18 +9,29 @@ local majiang
 -- 10-18 --条
 -- 19-27 --筒
 -- 28-35 --东南西北中发白
+local map=
+{
+	1,2,3,4,5,6,7,8,9,
+	1,2,3,4,5,6,7,8,9,
+	1,2,3,4,5,6,7,8,9,
+	1,2,3,4,5,6,7
+}
 local function parse(id)
-	if(id>=1 and id<=9) then
-		return 1,id
-	elseif(id>=10 and id<=18) then
-		return 2,id-9
-	elseif(id>=19 and id<=27) then
-		return 3,id-18
-	elseif(id>=28 and id<=35) then
-		return 4,id-27
-	else
-		return 0,0	
-	end
+	if(id<1 or id>35) then
+		return 0,0
+	end	
+	return math.ceil(id/9),map[id]
+	-- if(id>=1 and id<=9) then
+	-- 	return 1,id
+	-- elseif(id>=10 and id<=18) then
+	-- 	return 2,id-9
+	-- elseif(id>=19 and id<=27) then
+	-- 	return 3,id-18
+	-- elseif(id>=28 and id<=35) then
+	-- 	return 4,id-27
+	-- else
+	-- 	return 0,0	
+	-- end
 end
 local function tongji(tb)
 	local r={}
@@ -29,17 +40,15 @@ local function tongji(tb)
 	r[2]={}
 	r[3]={}
 	r[4]={}
+	if(#tb>=2) then
+		table.sort(tb,function(a,b)
+			return a<b
+		end)
+	end
 	for _,id in ipairs(tb) do
 		local tp,idx = parse(id)
 		if(tp and idx) then
 			table.insert(r[tp],idx)
-		end
-	end
-	for i=0,4 do 
-		if(#r[i]>=2) then
-			table.sort(r[i],function(a,b)
-				return a<b
-			end)
 		end
 	end
 	return r
@@ -60,24 +69,9 @@ local function test()
 	}
 	local tb = tongji(t)
 	for tp,tt in pairs(tb) do
-		print(tp,tb2str(tt))
+		skynet.error(tp,tb2str(tt))
 	end
 end
-------------------------
--- 	1(1)
--- 2(-1,1)
--- 3(-1)
--- 	4(1,2)
--- 5(-1,1)
--- 6(-1)
--- 	7(1,2)
--- 8(-1,1)
--- 9(-1)
--- 	10(1,2)
--- 11(-1,1)
--- 12(-1)
--- 	13(1,2)
--- 14(-1,1)
 ------------------------
 local function check(t,id)
 	local tp,idx = parse(id)
@@ -118,9 +112,9 @@ local function loop()
 		local tb = skynet.now()
 		skynet.error("call majiang 1 tm =",(tb-ta)*10)
 		util.dump(r,'call majiang 1')
-		local r = skynet.call(majiang,'lua','get',1,'1234567')
-		util.dump(r,'call majiang 2')
-		skynet.sleep(5000)
+		local r = skynet.call(majiang,'lua','get',1,'12345677')
+		skynet.error(r,'call majiang 2')
+		skynet.sleep(500)
 		-- skynet.send(majiang,'lua','test')
 		-- skynet.sleep(100)
 	end
@@ -177,6 +171,7 @@ skynet.start(function()
 	majiang = skynet.queryservice('majiang')
 	
 	-- skynet.fork(loop)
+	-- skynet.fork(test)
 
 	skynet.dispatch('lua',function(session, source, cmd,...)
 		if(CMD[cmd]) then
