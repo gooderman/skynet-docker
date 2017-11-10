@@ -297,7 +297,7 @@ __t18 = f18()
 
 __t20 = f20()
 
-function tabletofile(tb,path)
+function tabletofile(tb,path,keytp)
     local file = io.open(path,'w+b')
     local sss = "local t={\n"
     local i=0
@@ -311,10 +311,18 @@ function tabletofile(tb,path)
                 dot=','
             end
             ttss = ttss.."}"
-            line = string.format("[\"%s\"] = %s,\n",k,ttss)
+            if(keytp==1) then
+                line = string.format("[%s] = %s,\n",k,ttss)
+            else
+                line = string.format("[\"%s\"] = %s,\n",k,ttss)
+            end
         elseif(type(v)=='number') then
             -- line = string.format("[\"%s\"] = %d,\n",k,v)
-            line = string.format("[%s] = %d,\n",k,v)
+            if(keytp==1) then
+                line = string.format("[%s] = %d,\n",k,v)
+            else
+                line = string.format("[\"%s\"] = %d,\n",k,v)
+            end
         end
         sss = sss .. line
         i=1+1
@@ -383,7 +391,13 @@ local ppp = "zi_all.lua"
 ppp = path..ppp
 print("tablefofile",ppp)
 os.execute("rm -f "..ppp)
-tabletofile(vvv,ppp) 
+tabletofile(vvv,ppp,1) 
+
+-- local ppp = "zi_all_s.lua"
+-- ppp = path..ppp
+-- print("tablefofile",ppp)
+-- os.execute("rm -f "..ppp)
+-- tabletofile(vvv,ppp,'s') 
 -- tabletofile(__t4,path..'__t4.lua')
 -- tabletofile(__t5,path..'__t5.lua')
 -- tabletofile(__t6,path..'__t6.lua')

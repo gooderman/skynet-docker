@@ -17,6 +17,7 @@ local a = os.clock()
 -- local z12 = require "mjlib.zzz.zi_12"
 -- local z14 = require "mjlib.zzz.zi_14"
 local zall = require "mjlib.zzz.zi_all"
+-- local zall_s = require "mjlib.zzz.zi_all_s"
 
 -- local z15 = require "mjlib.zzz.zi_15"
 -- local z17 = require "mjlib.zzz.zi_17"
@@ -33,6 +34,7 @@ local zall = require "mjlib.zzz.zi_all"
 -- local f12 = require "mjlib.fff.feng_12"
 -- local f14 = require "mjlib.fff.feng_14"
 local fall = require "mjlib.fff.feng_all"
+-- local fall_s = require "mjlib.fff.feng_all_s"
 -- local f15 = require "mjlib.fff.feng_15"
 -- local f17 = require "mjlib.fff.feng_17"
 -- local f18 = require "mjlib.fff.feng_18"
@@ -66,6 +68,24 @@ end
 
 function CMD.get(paitp,key)
 	local t
+	if(paitp==4) then
+		t = fall
+	else
+		t = zall
+	end
+	-- if(type(key)=='table') then
+	-- 	local rr = {}
+	-- 	for i,k in ipairs(key) do
+	-- 		rr[i] = t[k] or false
+	-- 	end 
+	-- 	return rr
+	-- else
+		r = t[key]  or false
+		return r
+	-- end
+end
+function CMD.gett(paitp,key)
+	local t
 	if(paitp>=1 and paitp<=3) then
 		t = zall
 	else
@@ -94,12 +114,19 @@ local BB = {
 	1000,10000,100000,
 	1000000,10000000,100000000
 }
+local __tongji = mjlib.tongji
+local __floor = math.floor
+local __combine = mjlib.combine
 function CMD.ting(pai)
+	local t,tc = __tongji(pai)
+	return CMD.ting2(t,tc)
+end	
+function CMD.ting2(t,tc)
 	local cc={0,1,1,0,1,1,0,1,1,0,1,1,0,1, 1,0,1,1,0,1}
 	cc[0] = 1
 	cc[-1] = 0
 
-	local t,tc = mjlib.tongji(pai)
+	-- local t,tc = __tongji(pai)
 	-- util.dump(t,'CMD.ting.tj')
 	-- util.dump(tc,'CMD.ting.tj2')
 	--三个无效数量必定无效
@@ -133,6 +160,7 @@ function CMD.ting(pai)
 	end
 	-- util.dump(ot,'CMD.ting.op')
 	local rr = {}
+	local rc = 0
 	local p_out = 0
 	local p_in = 0
 if(true) then	
@@ -142,11 +170,11 @@ if(true) then
 		local v = vb
 		if(v>0) then
 			for m=9,1,-1 do
-				local v1 = math.floor(v/BB[m])
+				local v1 = __floor(v/BB[m])
 				v = v - v1*BB[m]
 				if v1>0 then
 					local v2 = vb - BB[m]
-					p_out = mjlib.combine(i,m)
+					p_out = __combine(i,m)
 					---------------------------	
 					local vv = vb
 					for n=9,1,-1 do
@@ -155,8 +183,10 @@ if(true) then
 						tcp[i]=v3 
 						-- skynet.error(i,m,n,v3)
 						if(CMD.hu2(tcp)) then							
-							p_in = mjlib.combine(i,n)
-							table.insert(rr,p_out.."--"..p_in)
+							p_in = __combine(i,n)
+							-- table.insert(rr,p_out.."--"..p_in)
+							rr[rc+1] = p_out.."--"..p_in
+							rc = rc+1
 						end
 					end
 				end
@@ -174,13 +204,13 @@ if(true) then
 			--逐个sub
 			local v = t[i]
 			for m=9,1,-1 do
-				local v1 = math.floor(v/BB[m])
+				local v1 = __floor(v/BB[m])
 				v = v - v1*BB[m]
 				if v1>0 then
 					local v2 = vb - BB[m]
 					--检测有效
 					if CMD.get(i,v2) then
-						p_out = mjlib.combine(i,m)
+						p_out = __combine(i,m)
 						--逐一尝试
 						for j=1,4 do
 							--可加
@@ -192,8 +222,10 @@ if(true) then
 									tcp[i]=v2
 									tcp[j]=tcp[j] + v3 
 									if(CMD.hu2(tcp)) then
-										p_in = mjlib.combine(j,n)
-										table.insert(rr,p_out.."--"..p_in)
+										p_in = __combine(j,n)
+										-- table.insert(rr,p_out.."--"..p_in)
+										rr[rc+1] = p_out.."--"..p_in
+										rc = rc+1
 									end
 								end
 							end
@@ -236,7 +268,7 @@ function CMD.hu2(t)
 end
 
 function CMD.hu(pai)
-	local t,_= mjlib.tongji(pai)
+	local t,_= __tongji(pai)
 	local flag = true
 	local jc = 0
 	-- util.dump(t,"CMD.hu")
@@ -270,6 +302,19 @@ local function test()
 	end
 	local tb = skynet.now()
 	skynet.error("call CMD.hu = ",r , " tm =",(tb-ta)*10)
+	skynet.sleep(10)
+
+	local ta = skynet.now()
+	local r
+	local t,tc= mjlib.tongji(ttt)
+	for i=1,100000 do
+		t[1] = t[1]+BB[3]
+		t[1] = t[1]-BB[3]
+		r = CMD.hu2(t)
+	end
+	local tb = skynet.now()
+	skynet.error("call CMD.hu2 = ",r , " tm =",(tb-ta)*10)
+	skynet.sleep(10)
 
 	local ta = skynet.now()
 	local r
@@ -277,12 +322,71 @@ local function test()
 		r = CMD.ting(ttt)
 	end
 	local tb = skynet.now()
-
 	skynet.error("call CMD.ting tm =",(tb-ta)*10)
-
 	util.dump(r,'CMD.ting')
+	skynet.sleep(10)
+
+	local ta = skynet.now()
+	local r
+	local t,tc= mjlib.tongji(ttt)
+	for i=1,10000 do
+		t[2] = t[2]+BB[9]
+		t[2] = t[2]-BB[9]
+		r = CMD.ting2(t,tc)
+	end
+	local tb = skynet.now()
+	skynet.error("call CMD.ting2 tm =",(tb-ta)*10)
+	util.dump(r,'CMD.ting2')	
+end
+
+local function test_table()
+
+	local ttt = {
+		222222200,
+		111222,
+		33221133,
+	}
+	
+	local ta = skynet.now()
+	local r
+	for i=1,10000000 do
+		for j=1,1 do
+			r = zall[ttt[j]]
+		end
+	end
+	local tb = skynet.now()
+	skynet.error("call table[i] tm =",(tb-ta)*10)
+	skynet.sleep(10)
+
+
+	local ta = skynet.now()
+	local r
+	for i=1,10000000 do
+		for j=1,1 do
+			r = zall_s[tostring(ttt[j])]
+		end
+	end
+	local tb = skynet.now()
+	skynet.error("call table[s1] tm =",(tb-ta)*10)
+	skynet.sleep(10)
+
+
+	for j=1,3 do
+		ttt[j] = tostring(ttt[j])
+	end
+	local ta = skynet.now()
+	local r
+	for i=1,10000000 do
+		for j=1,1 do
+			r = zall_s[ttt[j]]
+		end
+	end
+	local tb = skynet.now()
+	skynet.error("call table[s2] tm =",(tb-ta)*10)
+	skynet.sleep(10)
 
 end
+
 skynet.start(function()
 
 	-- local ta = skynet.now()		
@@ -292,6 +396,7 @@ skynet.start(function()
 	-- zipai = nil
 	-- fengpai = nil
 	skynet.fork(test)
+	-- skynet.fork(test_table)
 	skynet.dispatch('lua',function(session, source, cmd, ...)
 		if(CMD[cmd]) then
 			local ff = CMD[cmd]
