@@ -89,6 +89,20 @@ local function f_repeat(r)
     return rr,nn
 end
 
+__t2={}
+__t3={}
+__t5={}
+__t6={}
+__t8={}
+__t9={}
+__t11={}
+__t12={}
+__t14={}
+__t15={}
+__t17={}
+__t18={}
+__t20={}
+
 local function f2()
     local r={}
     for _,k1 in pairs(t2) do
@@ -105,7 +119,6 @@ local function f3()
     end
     return filter(r)
 end
-
 local function f5()
     local r={}
     for _,k1 in pairs(t3) do
@@ -114,11 +127,10 @@ local function f5()
         end
     end
     local rr,nn = f_repeat(r)
-    print(string.format("55-55 ===== %d",nn))
+    print(string.format("55 ===== %d",nn))
     -- dump(rr,"f5")
     return filter(rr)
 end
-
 local function f6()
     local r={}
     --3
@@ -129,151 +141,58 @@ local function f6()
         end
     end
     local rr,nn = f_repeat(r)
-    print(string.format("66-66 ===== %d",nn))
+    print(string.format("66 ===== %d",nn))
     -- dump(rr,"f6")
     return filter(rr)
 end
 
-
-local function f8()
-    local t=__t6
-    --3
+local function fn(n,v,o1,o2)
     local r={}
-    for k in pairs(t) do
-        --2
-        for _,k2 in pairs(t2) do
-            r[k..k2]=1
+    for k1 in pairs(o1) do
+        for _,k2 in pairs(o2) do
+            r[k1..k2]=v
         end
     end
     local rr,nn = f_repeat(r)
-    print(string.format("88-88 ===== %d",nn))
-    -- dump(rr,"f8")
+    print(string.format(string.rep(""..n,2).." ===== %d",nn))
     return filter(rr)
+end
+
+local function f8()
+    -- dump(__t6)
+    return fn(8,1,__t6,t2)
 end
 
 local function f9()
-    local t=__t6
-    --3
-    local r={}
-    for k1 in pairs(t) do
-        --3
-        for _,k2 in pairs(t3) do
-            r[k1..k2]=0
-        end
-    end
-    local rr,nn = f_repeat(r)
-    print(string.format("99-99 ===== %d",nn))
-    -- dump(rr,"f9")
-    return filter(rr)
+    return fn(9,0,__t6,t3)
 end
 
 local function f11()
-    local t=__t9
-    --3
-    local r={}
-    for k1 in pairs(t) do
-        --2
-        for _,k2 in pairs(t2) do
-            r[k1..k2]=1
-        end
-    end
-    local rr,nn = f_repeat(r)
-    print(string.format("11-11 ===== %d",nn))
-    return filter(rr)
+    return fn(11,1,__t9,t2)
 end
 
 local function f12()
-    local t=__t9
-    --3
-    local r={}
-    for k1 in pairs(t) do
-        --3
-        for _,k2 in pairs(t3) do
-            r[k1..k2]=0
-        end
-    end
-    local rr,nn = f_repeat(r)
-    print(string.format("12-12 ===== %d",nn))
-    -- dump(rr,"f9")
-    return filter(rr)
+    return fn(12,0,__t9,t3)
 end
 
-
 local function f14()
-    local t=__t12
-    --3
-    local r={}
-    for k1 in pairs(t) do
-        for _,k2 in pairs(t2) do
-            r[k1..k2]=1
-        end
-    end
-    local rr,nn = f_repeat(r)
-    print(string.format("14-14 ===== %d",nn))
-    return filter(rr)
+    return fn(14,1,__t12,t2)
 end
 
 --------------------------------------------------------
 local function f15()
-    local t=__t12
-    --3
-    local r={}
-    for k1 in pairs(t) do
-        --3
-        for _,k2 in pairs(t3) do
-            r[k1..k2]=0
-        end
-    end
-    local rr,nn = f_repeat(r)
-    print(string.format("15-15 ===== %d",nn))
-    return filter(rr)
+    return fn(15,0,__t12,t3)
 end
 
 local function f17()
-    local t=__t15
-    --3
-    local r={}
-    for k1 in pairs(t) do
-        --2
-        for _,k2 in pairs(t2) do
-            r[k1..k2]=1
-        end
-    end
-    local rr,nn = f_repeat(r)
-    print(string.format("17-17 ===== %d",nn))
-    return filter(rr)
+    return fn(17,1,__t15,t2)
 end
-
 --------------------------------------------------------
 local function f18()
-    local t=__t15
-    --3
-    local r={}
-    for k1 in pairs(t) do
-        --3
-        for _,k2 in pairs(t3) do
-            r[k1..k2]=0
-        end
-    end
-    local rr,nn = f_repeat(r)
-    print(string.format("18-18 ===== %d",nn))
-    return filter(rr)
+    return fn(18,0,__t15,t3)
 end
-
 local function f20()
-    local t=__t18
-    --3
-    local r={}
-    for k1 in pairs(t) do
-        --2
-        for _,k2 in pairs(t2) do
-            r[k1..k2]=1
-        end
-    end
-    local rr,nn = f_repeat(r)
-    print(string.format("20-20 ===== %d",nn))
-    -- dump(rr,"f9")
-    return filter(rr)
+    return fn(20,1,__t18,t2)
 end
 
 function tabletofile(tb,path,keytp)
@@ -329,19 +248,19 @@ local BB = {
 }
 
 local function out_file(inputs,outfile)
-    __t2=nil
-    __t3=nil
-    __t5=nil
-    __t6=nil
-    __t8=nil
-    __t9=nil
-    __t11=nil
-    __t12=nil
-    __t14=nil
-    __t15=nil
-    __t17=nil
-    __t18=nil
-    __t20=nil
+    __t2={}
+    __t3={}
+    __t5={}
+    __t6={}
+    __t8={}
+    __t9={}
+    __t11={}
+    __t12={}
+    __t14={}
+    __t15={}
+    __t17={}
+    __t18={}
+    __t20={}
 
     ---输入参数
     t1 = inputs[1]
