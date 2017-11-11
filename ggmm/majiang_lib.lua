@@ -82,6 +82,18 @@ local function i2str(v)
 	end
 	return s
 end
+local function sub(t,id)
+	for i,v in ipairs(t) do
+		if(id==v) then
+			table.remove(t,i)
+			return true
+		end
+	end
+end
+local function add(t,id)
+	table.insert(t,id)
+end
+
 local function test()
 	local t={
 		1,2,3,4,5,
@@ -95,28 +107,6 @@ local function test()
 	end
 end
 ------------------------
-local function check(t,id)
-	local tp,idx = parse(id)
-	table.insert(t[tp],idx)
-	if(#t[tp]>2) then
-		table.sort(t[tp],function(a,b)
-			return a<b
-		end)
-	end
-end
-local function sub(t,tp,id)
-	local id = combine(tp,id)
-	for i,v in ipairs(t) do
-		if(id==v) then
-			table.remove(t,i)
-			return true
-		end
-	end
-end
-local function add(t,tp,id)
-	local id = combine(tp,id)
-	table.insert(t,id)
-end
 ------------------------
 --解析牌
 mj.parse = parse
@@ -128,7 +118,6 @@ mj.tb2str = tb2str
 --转换字窜
 mj.i2str = i2str
 --插入
-mj.check = check
 mj.sub = sub
 mj.add = add
 return mj

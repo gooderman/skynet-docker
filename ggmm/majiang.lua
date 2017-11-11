@@ -65,7 +65,6 @@ function CMD.test()
 	local tb = skynet.now()
 	skynet.error("majiang test end",(tb-ta)*10)
 end
-
 function CMD.get(paitp,key)
 	local t
 	if(paitp==4) then
@@ -101,13 +100,6 @@ function CMD.gett(paitp,key)
 		r = t[key]  or false
 		return r
 	end
-end
-local function copytb(tp,t)
-	local r = {}
-	for _,v in ipairs(t) do
-		table.insert(r,mjlib.combine(tp,v))
-	end
-	return r
 end
 local BB = {
 	1,10,100,
@@ -375,7 +367,111 @@ function CMD.ting7D__(t,tc)
 		return rr
 	end
 end
+------------------------------------
+--吊将
+function CMD.checkHuType_DJ(t,id)
+--去掉两个id以后,查表有效
+--去掉三个id以后,查表无效
+end
+--大吊车，手牌只一张，吊将
+function CMD.checkHuType_DDJ(t,id)
+--包括id 只有两张手牌
+end
+--碰碰
+function CMD.checkHuType_PP(t,id)
+--去掉三个id以后,查表有效
+end
+--七对
+function CMD.checkHuType_7D(t,id)
+--全是两个
+end
+--十三幺
+function CMD.checkHuType_13Y(t,id)
+--东南西北中发白9条9筒9万1条1筒+1万做将
+end
+--幺九
+function CMD.checkHuType_YJ(t,id)
+--1+9+风
+end
+--小幺
+function CMD.checkHuType_YJ(t,id)
+--1+风
+end
+--清一色
+function CMD.checkHuType_QYS(t,id)
+--只有一门 无风
+end
+--混一色
+function CMD.checkHuType_QYS(t,id)
+--只有一门数字牌 + 风牌
+end
+--一条龙
+function CMD.checkHuType_YTL(t,id)
+--同门1-9
+end
+--一般高
+function CMD.chenHuType_YBG(t,id)
+--同色三张一搭牌，2组，去掉以后 查表有效
+end
+--老少
+function CMD.checkHuType_LS(t,id)
+--同色123 789--
+end
+--坎
+function CMD.checkHuType_KAN(t,id)
+--去掉id-1,id,id+1,查表有效 且 是缺口
+end
+--缺口
+function CMD.checkHuType_Only(t,id)
+--id换成任意一张，查表全无效
+end
+--缺几门(数字牌)
+function CMD.checkHuType_QM(t,id)
+end
+--门清
+function CMD.checkHuType_MQ(t,id)
+--无吃碰
+end
+-------------------------------------
+--缺一门 1
+--门清(不吃不碰) 1
+--胡258 1
+--258将 1
 
+--老少123789 1
+--456 1
+--一般高123123 1
+
+--东南飞 西北转 中发白 3
+--明杠 1
+--暗杠 2
+--中发白 杠 2
+--中发白 暗杠 4
+
+--碰碰胡 5
+--混一色 5
+--清一色 10
+--一条龙 10
+--七对 20
+--幺九 30
+--小幺 50
+--十三花 100
+------------------------------------
+--东南飞 西北转 中发白 胡牌算法
+--细分牌种
+---1 万
+---2 条
+---3 筒
+---4 东南1条
+---5 西北1筒
+---6 中发白
+--1条1筒排列组合分别 转为4和5 算胡牌
+---2个1条 2个1筒 组合
+---两层for循环倒序从多到少，每一项再去查表，是否有效即可
+---22,21,20,
+---12,11,10,
+---02,01,00
+------------------------------------
 local function testA()
 	local ttt ={
 		-- 1,2,3, 4,5,6, 31,31,31, 11,12,13, 20,20
