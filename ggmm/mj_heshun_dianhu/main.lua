@@ -2,46 +2,17 @@ local skynet = require "skynet"
 require "manager"
 local socket = require "socket"
 local proxy = require "socket_proxy"
-local mjlib = require "majiang_lib"
 local util = require "util"
 require "functions"
+local mjlib = import(".base",...) 
+
 
 local a = os.clock()
--- local z2 = require "mjlib.zzz.zi_2"
--- local z3 = require "mjlib.zzz.zi_3"
--- local z5 = require "mjlib.zzz.zi_5"
--- local z6 = require "mjlib.zzz.zi_6"
--- local z8 = require "mjlib.zzz.zi_8"
--- local z9 = require "mjlib.zzz.zi_9"
--- local z11 = require "mjlib.zzz.zi_11"
--- local z12 = require "mjlib.zzz.zi_12"
--- local z14 = require "mjlib.zzz.zi_14"
-local zall = require "mjlib.zzz.zi_all"
--- local zall_s = require "mjlib.zzz.zi_all_s"
-
--- local z15 = require "mjlib.zzz.zi_15"
--- local z17 = require "mjlib.zzz.zi_17"
--- local z18 = require "mjlib.zzz.zi_18"
--- local z20 = require "mjlib.zzz.zi_20"
-
--- local f2 = require "mjlib.fff.feng_2"
--- local f3 = require "mjlib.fff.feng_3"
--- local f5 = require "mjlib.fff.feng_5"
--- local f6 = require "mjlib.fff.feng_6"
--- local f8 = require "mjlib.fff.feng_8"
--- local f9 = require "mjlib.fff.feng_9"
--- local f11 = require "mjlib.fff.feng_11"
--- local f12 = require "mjlib.fff.feng_12"
--- local f14 = require "mjlib.fff.feng_14"
-local fall = require "mjlib.fff.feng_all"
--- local fall_s = require "mjlib.fff.feng_all_s"
--- local f15 = require "mjlib.fff.feng_15"
--- local f17 = require "mjlib.fff.feng_17"
--- local f18 = require "mjlib.fff.feng_18"
--- local f20 = require "mjlib.fff.feng_20"
+local zall = require "mjlib.gen.A_wtt"
+local fall = require "mjlib.gen.A_zi"
 
 local b = os.clock()
-skynet.error("majiang load",b-a)
+skynet.error("mj_heshun_dianhu load",b-a)
 
 
 -- local zipai={
