@@ -19,15 +19,20 @@ local str =
      createtime 9 : integer
 }
 
-login 1 {
- request {
-     player 0 : Player
- }
- response {
-    result 0 : integer
-    player 1 : Player
- }
+.Room {
+     id 0 : integer
+     renshu 1 : integer
 }
+
+auth 1 {
+    request {
+        key 0 : string
+    }
+    response {
+        key 0 : string
+    }
+   }
+
 
 heartup 2 {
  request {
@@ -35,12 +40,15 @@ heartup 2 {
  response {
     id 0 : integer
  }
-}
+}   
 
-heartdown 3 {
+login 3 {
  request {
+     player 0 : Player
  }
  response {
+    state 0 : integer
+    player 1 : Player
  }
 }
 
@@ -51,14 +59,48 @@ kickoff 4 {
  }
 }
 
-auth 5 {
-    request {
-        key 0 : string
-    }
-    response {
-        key 0 : string
-    }
-   }
+getroom 5 {
+ request {
+    userid 0 : integer
+ }
+ response {
+    state 0 : integer
+    room 1 : Room
+ }
+}
+
+newroom 6 {
+ request {
+    type 0 : integer
+    renshu 1 : integer
+ }
+ response {
+    state 0 : integer
+    room 1 : Room
+ }
+}
+
+joinroom 7 {
+ request {
+    roomid 0 : integer
+ }
+ response {
+    state 0 : integer
+    room 1 : Room
+ }
+}
+
+gameready 8 {
+ request {
+    ready 0 : integer
+ }
+ response {
+
+ }
+}
+
+
+
 ]]
 
 return str

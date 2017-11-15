@@ -37,7 +37,7 @@ local userinfo
 local COMMAND = {}
 local function decode_request(msg)
 	local cmd,data,response,ud = decode_msg(msg)
-	skynet.error('agent decode_msg',cmd)
+	-- skynet.error('agent decode_msg',cmd)
 	if(cmd and COMMAND[cmd] and data) then
 		local rsp = COMMAND[cmd](data)
 		if(response) then
@@ -54,17 +54,38 @@ local function loop()
 		if ok then
 			pcall(decode_request,msg)
 		else	
-			skynet.error("agent fail read")
-			skynet.send(agentMgr,'lua','agent-closed',fd)
-			skynet.exit()
+			COMMAND.close("agent fail read")
 			return
 		end
+	end
+end
+local function test()
+	while true do
+		util.dump(userinfo,'userinfo')
+		if(userinfo) then
+			skynet.error("test 1")
+			local rr = COMMAND.newroom({renshu=4,type=1})
+			skynet.error("test 2")
+			util.dump(rr,'newroom')
+			skynet.sleep(100)
+			rr = COMMAND.getroom()
+			util.dump(rr,'getroom')
+			skynet.sleep(100)
+			rr = COMMAND.joinroom({roomid=rr.room.id})
+			util.dump(rr,'joinroom')
+		end
+		-- skynet.sleep(100)
 	end
 end
 function COMMAND.close(msg)
 	skynet.error(msg)
 	skynet.send(agentMgr,'lua','agent-closed',fd)
 	proxy.close(fd)
+	local rr  = COMMAND.getroom()
+	if(rr.state==0) then
+		local roomaddr = rr.room.addr
+		skynet.call(roomaddr,'lua','quit',userinfo.id)
+	end
 	skynet.exit()
 end
 function COMMAND.heartup(data)
@@ -74,32 +95,50 @@ function COMMAND.heartup(data)
 end
 function COMMAND.login(data)
 	util.dump(data,'cmd.login')
-	userinfo = data.player
-	local userdb = skynet.call(store_sqlite,'lua','get_user',userinfo)
+	local userdb = skynet.call(store_sqlite,'lua','get_user',data.player)
 	if(not userdb) then
-		userdb = skynet.call(store_sqlite,'lua','new_user',userinfo)
+		userdb = skynet.call(store_sqlite,'lua','new_user',data.player)
 	end
 	if(userdb) then
-		return {result=0,player=userdb}
+		userinfo = userdb
+		return {state=0,player=userdb}
 	else
 		skynet.fork(function()
 				COMMAND.close("login fail close")
 			end)
-		return {result=1}
+		return {state=1}
 	end
 end
 -- function COMMAND.auth(data)
 -- 	dump(data,'cmd.auth')
 -- 	return {key='0'}
 -- end
+function COMMAND.getroom()
+	if(userinfo) then
+		local state,info = skynet.call('.roommgr','lua','getroom',userinfo)
+		return {state = state,room = info}
+	else
+		return {state = -1}
+	end
+end
+
 function COMMAND.newroom(data)
-	local roomid,args = skynet.call('roommgr','lua','newroom',userinfo.userid,data)
-	return r
+	local state,roomid,info = skynet.call('.roommgr','lua','newroom',userinfo,data)
+	if(state==0) then
+		info.id = roomid
+	end
+	return {state = state,room = info}
 end
 
 function COMMAND.joinroom(data)
-	local r = skynet.call('roommgr','lua','joinroom',userinfo.userid,data)
-	return r
+	local st,info = skynet.call('.roommgr','lua','joinroom',userinfo,data.roomid)
+	return {state = state,room = info}
+end
+
+local NTF_CMD={}
+function NTF_CMD.ntf_gameready()
+	local reqdata = send_request("gameready",{ready=1},1,"")
+	write(fd,reqdata,string.len(reqdata))
 end
 
 skynet.start(function()
@@ -130,8 +169,11 @@ skynet.start(function()
 			print('agent init',fd,addr,ip)
 			proxy.subscribe(fd)
 			skynet.fork(loop)
+			-- skynet.fork(test)
 			-- error("fuckfuck")
 			skynet.retpack({fd=fd,addr=addr,ip=ip})
+		elseif(NTF_CMD[cmd]) then
+			skynet.retpack(NTF_CMD[cmd]())
 		end
 	end)
 end)

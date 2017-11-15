@@ -77,19 +77,20 @@ local BB = {
 	1000,10000,100000,
 	1000000,10000000,100000000
 }
+--每种张数量 能否成搭 3*n+2
+local OPT={0,1,1,0,1,1,0,1,1,0,1,1,0,1, 1,0,1,1,0,1}
+OPT[0] = 1
+OPT[-1] = 0
 local __tongji = mjlib.tongji
 local __floor = math.floor
 local __fmod = math.fmod
 local __combine = mjlib.combine
+local __parse = mjlib.parse
 function CMD.tingA(pai)
 	local t,tc = __tongji(pai)
 	return CMD.tingA__(t,tc)
 end	
 function CMD.tingA__(t,tc)
-	local cc={0,1,1,0,1,1,0,1,1,0,1,1,0,1, 1,0,1,1,0,1}
-	cc[0] = 1
-	cc[-1] = 0
-
 	-- local t,tc = __tongji(pai)
 	-- util.dump(t,'CMD.ting.tj')
 	-- util.dump(tc,'CMD.ting.tj2')
@@ -97,7 +98,7 @@ function CMD.tingA__(t,tc)
 	local n = 0
 	for i=1,4 do
 		local ct = tc[i]
-		if cc[ct] == 0 then
+		if OPT[ct] == 0 then
 			n = n+1
 			if(n>2) then
 				return false,1
@@ -111,12 +112,12 @@ function CMD.tingA__(t,tc)
 	for i=1,4 do
 		ot[i] = {}
 		local ct = tc[i]
-		if cc[ct-1] == 0 then
+		if OPT[ct-1] == 0 then
 			ot[i][1]=0
 		else	
 			ot[i][1]=1
 		end
-		if cc[ct+1] == 0 then
+		if OPT[ct+1] == 0 then
 			ot[i][2]=0
 		else	
 			ot[i][2]=1
@@ -133,7 +134,11 @@ function CMD.tingA__(t,tc)
 			local vb = t[i]
 			local v = vb
 			if(v>0) then
-				for m=9,1,-1 do
+				
+				local minhu = (i==4 and 1 or 3) --字牌10点，其他3点
+				local maxhu = (i==4 and 7 or 9) --字牌10点，其他3点
+				-- for m=9,1,-1 do
+				for m=maxhu,1,-1 do
 					local v1 = __floor(v/BB[m])
 					v = v - v1*BB[m]
 					if v1>0 then
@@ -141,7 +146,7 @@ function CMD.tingA__(t,tc)
 						p_out = __combine(i,m)
 						---------------------------	
 						local vv = vb
-						for n=9,1,-1 do
+						for n=maxhu,minhu,-1 do
 							local v3 = v2+BB[n]
 							local tcp = {t[1],t[2],t[3],t[4]}
 							tcp[i]=v3 
@@ -149,7 +154,7 @@ function CMD.tingA__(t,tc)
 							if(CMD.huA__(tcp)) then							
 								p_in = __combine(i,n)
 								-- table.insert(rr,p_out.."--"..p_in)
-								rr[rc+1] = p_out.."--"..p_in
+								rr[rc+1] = {p_out,p_in}
 								rc = rc+1
 							end
 						end
@@ -179,8 +184,11 @@ function CMD.tingA__(t,tc)
 							for j=1,4 do
 								--可加
 								if (ot[j][2]>0 and t[j]>0 and i~=j) then
+									local minhu = (j==4 and 1 or 3) --字牌10点，其他3点
+									local maxhu = (j==4 and 7 or 9) --字牌10点，其他3点
 									--逐个add
-									for n=1,9 do
+									-- for n=1,9 do
+									for n=minhu,maxhu do	
 										local v3 = BB[n]
 										local tcp = {t[1],t[2],t[3],t[4]}
 										tcp[i]=v2
@@ -188,7 +196,7 @@ function CMD.tingA__(t,tc)
 										if(CMD.huA__(tcp)) then
 											p_in = __combine(j,n)
 											-- table.insert(rr,p_out.."--"..p_in)
-											rr[rc+1] = p_out.."--"..p_in
+											rr[rc+1] = {p_out,p_in}
 											rc = rc+1
 										end
 									end
@@ -206,6 +214,7 @@ function CMD.tingA__(t,tc)
 		return rr
 	end
 end
+------------------------------
 function CMD.huA(pai)
 	local t,_= __tongji(pai)
 	return CMD.huA__(t)
@@ -233,21 +242,21 @@ function CMD.huA__(t)
 	end
 	return flag and jc==1
 end
-
+------------------------------
 function CMD.hu7D(pai)
 	local t,tc= __tongji(pai)
 	return CMD.hu7D__(t,tc)
 end
 function CMD.hu7D__(t,tc)
 	local flag = true
-	-- local all = 0
-	-- for i=1,4 do
-	-- 	all = all + tc[i]
-	-- end	
-	-- --无吃无碰无杠
-	-- if(all~=14) then
-	-- 	return false
-	-- end
+	local all = 0
+	for i=1,4 do
+		all = all + tc[i]
+	end
+	--无吃无碰无杠
+	if(all~=14) then
+		return false
+	end
 	-- --数量偶数判断
 	-- for i=1,4 do
 	-- 	all = all + tc[i]
@@ -303,7 +312,9 @@ function CMD.ting7D__(t,tc)
 		local j=1
 		while v>0 do
 			if(__fmod(v,2)==1) then
-				tj[#tj+1] = __combine(i,j)
+				if i==4 or j>=3 then 
+					tj[#tj+1] = __combine(i,j)
+				end
 			end
 			v = __floor(v/10) 
 			j = j + 1
@@ -316,8 +327,8 @@ function CMD.ting7D__(t,tc)
 
 	if(#tj==2) then
 		--两张中出任意一张
-		rr[1] = tj[1].."--"..tj[2]
-		rr[2] = tj[2].."--"..tj[1]
+		rr[1] = {tj[2],tj[1]}
+		rr[2] = {tj[1],tj[2]}
 	elseif(#tj==0) then
 		--已经是胡牌，任意一张
 		for i=1,4 do
@@ -325,8 +336,10 @@ function CMD.ting7D__(t,tc)
 			local j=1
 			while v>0 do
 				if(__fmod(v,10)>0) then
-					local vv = __combine(i,j)
-					rr[#rr+1] = vv.."--"..vv
+					if(i==4 or j>=3) then
+						local vv = __combine(i,j)
+						rr[#rr+1] = {vv,vv}
+					end
 				end
 				v = __floor(v/10)
 				j = j + 1
@@ -338,116 +351,36 @@ function CMD.ting7D__(t,tc)
 		return rr
 	end
 end
+
+function CMD.hu(pai,id,zimo)
+	local tp,idx = __parse(id)
+	if (tp==4) or (idx*zimo)>=5 then
+		local t,tc= __tongji(pai)
+		local a = CMD.hu7D__(t,tc)
+		local b = CMD.huA__(t)
+		return a or b
+	else
+		return false
+	end
+end
+function CMD.ting(pai)
+	local t,tc = __tongji(pai)
+	local ra = CMD.tingA__(t,tc)
+	local rb = CMD.ting7D__(t,tc)
+	if not (ra or rb) then
+		return false
+	end
+	local r = ra or {}
+	table.merge(r, rb or {})
+	return r
+end
 ------------------------------------
---吊将
-function CMD.checkHuType_DJ(t,id)
---去掉两个id以后,查表有效
---去掉三个id以后,查表无效
-end
---大吊车，手牌只一张，吊将
-function CMD.checkHuType_DDJ(t,id)
---包括id 只有两张手牌
-end
---碰碰
-function CMD.checkHuType_PP(t,id)
---去掉三个id以后,查表有效
-end
---七对
-function CMD.checkHuType_7D(t,id)
---全是两个
-end
---十三幺
-function CMD.checkHuType_13Y(t,id)
---东南西北中发白9条9筒9万1条1筒+1万做将
-end
---幺九
-function CMD.checkHuType_YJ(t,id)
---1+9+风
-end
---小幺
-function CMD.checkHuType_YJ(t,id)
---1+风
-end
---清一色
-function CMD.checkHuType_QYS(t,id)
---只有一门 无风
-end
---混一色
-function CMD.checkHuType_QYS(t,id)
---只有一门数字牌 + 风牌
-end
---一条龙
-function CMD.checkHuType_YTL(t,id)
---同门1-9
-end
---一般高
-function CMD.chenHuType_YBG(t,id)
---同色三张一搭牌，2组，去掉以后 查表有效
-end
---老少
-function CMD.checkHuType_LS(t,id)
---同色123 789--
-end
---坎
-function CMD.checkHuType_KAN(t,id)
---去掉id-1,id,id+1,查表有效 且 是缺口
-end
---缺口
-function CMD.checkHuType_Only(t,id)
---id换成任意一张，查表全无效
-end
---缺几门(数字牌)
-function CMD.checkHuType_QM(t,id)
-end
---门清
-function CMD.checkHuType_MQ(t,id)
---无吃碰
-end
--------------------------------------
---缺一门 1
---门清(不吃不碰) 1
---胡258 1
---258将 1
-
---老少123789 1
---456 1
---一般高123123 1
-
---东南飞 西北转 中发白 3
---明杠 1
---暗杠 2
---中发白 杠 2
---中发白 暗杠 4
-
---碰碰胡 5
---混一色 5
---清一色 10
---一条龙 10
---七对 20
---幺九 30
---小幺 50
---十三花 100
-------------------------------------
---东南飞 西北转 中发白 胡牌算法
---细分牌种
----1 万
----2 条
----3 筒
----4 东南1条
----5 西北1筒
----6 中发白
---1条1筒排列组合分别 转为4和5 算胡牌
----2个1条 2个1筒 组合
----两层for循环倒序从多到少，每一项再去查表，是否有效即可
----22,21,20,
----12,11,10,
----02,01,00
 ------------------------------------
 local function testA()
 	local ttt ={
-		-- 1,2,3, 4,5,6, 31,31,31, 11,12,13, 20,20
+		1,2,3, 4,5,6, 31,31,31, 11,12,13, 20,20
 		-- 11,12,13, 30,30,30, 7,8,9, 21,22,23, 6,6
-		1,1,2,2,3,3, 4,4, 5,5,6,6, 7,8
+		-- 1,1,2,2,3,3, 4,4, 5,5,6,6, 7,8
 	}
 	local ta = skynet.now()
 	local r
@@ -545,51 +478,30 @@ local function test7D()
 	util.dump(r,'CMD.ting7D__')
 end
 
-local function test_table()
-
+local function test()
 	local ttt = {
-		222222200,
-		111222,
-		33221133,
+		{1,2,3, 4,5,6, 31,31,31, 11,12,13, 20,20 },
+		{1,1,2,2,3,3, 4,4, 5,5, 6,6, 7,7 },
+		{31,31, 28,28, 3,3, 4,4, 5,5, 6,6, 8,8 },
+		{31,31,31, 28,28,28, 3,4,5, 6,7,8, 8,8 }
 	}
-	
+	skynet.error("test Hu 1=",CMD.hu(ttt[1],3,2))
+	skynet.error("test Hu 2=",CMD.hu(ttt[2],4,1))
+	skynet.error("test Hu 3=",CMD.hu(ttt[3],28,1))
+	local r
+	for i=1,#ttt do
+		r = CMD.ting(ttt[i])
+		-- util.dump(r,"test ting "..i)
+	end
+	-----------------------------------------------
 	local ta = skynet.now()
 	local r
-	for i=1,10000000 do
-		for j=1,1 do
-			r = zall[ttt[j]]
-		end
+	for i=1,10000 do
+		r = CMD.ting(ttt[1])
 	end
 	local tb = skynet.now()
-	skynet.error("call table[i] tm =",(tb-ta)*10)
-	skynet.sleep(10)
-
-
-	local ta = skynet.now()
-	local r
-	for i=1,10000000 do
-		for j=1,1 do
-			r = zall_s[tostring(ttt[j])]
-		end
-	end
-	local tb = skynet.now()
-	skynet.error("call table[s1] tm =",(tb-ta)*10)
-	skynet.sleep(10)
-
-
-	for j=1,3 do
-		ttt[j] = tostring(ttt[j])
-	end
-	local ta = skynet.now()
-	local r
-	for i=1,10000000 do
-		for j=1,1 do
-			r = zall_s[ttt[j]]
-		end
-	end
-	local tb = skynet.now()
-	skynet.error("call table[s2] tm =",(tb-ta)*10)
-	skynet.sleep(10)
+	skynet.error("test ting tm =",(tb-ta)*10)	
+	util.dump(r,'test CMD.ting tm')
 end
 
 skynet.start(function()
@@ -600,9 +512,9 @@ skynet.start(function()
 	-- skynet.error("majiang builder end",(tb-ta)*10)
 	-- zipai = nil
 	-- fengpai = nil
-	skynet.fork(testA)
-	skynet.fork(test7D)
-	-- skynet.fork(test_table)
+	-- skynet.fork(testA)
+	-- skynet.fork(test7D)
+	skynet.fork(test)
 	skynet.dispatch('lua',function(session, source, cmd, ...)
 		if(CMD[cmd]) then
 			local ff = CMD[cmd]

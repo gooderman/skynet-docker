@@ -58,30 +58,7 @@ local function tongji(tb)
 	end
 	return r,rc
 end
-local function tb2str(tb)
-	local s=''
-	for _,id in ipairs(tb) do
-		s=s..id
-	end
-	return s
-end
-local function i2str(v)
-	local b = {
-		1,10,100,
-		1000,10000,100000,
-		1000000,10000000,100000000
-	}
-	local s = ""
-	local t = 0
-	for i=9,1,-1 do
-		t =  math.floor(v/b[i])
-		if(t>0) then
-			s = string.rep(i,t)..s
-			v = v - t*b[i]
-		end
-	end
-	return s
-end
+
 local function sub(t,id)
 	for i,v in ipairs(t) do
 		if(id==v) then
@@ -102,9 +79,7 @@ local function test()
 		28,29,30
 	}
 	local tb = tongji(t)
-	for tp,tt in pairs(tb) do
-		skynet.error(tp,tb2str(tt))
-	end
+	util.dump(tb)
 end
 ------------------------
 ------------------------
@@ -113,10 +88,6 @@ mj.parse = parse
 mj.combine = combine
 --统计分类
 mj.tongji = tongji
---转换字窜
-mj.tb2str = tb2str
---转换字窜
-mj.i2str = i2str
 --插入
 mj.sub = sub
 mj.add = add

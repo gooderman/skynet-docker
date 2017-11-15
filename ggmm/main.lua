@@ -2,6 +2,7 @@ local skynet = require "skynet"
 
 local auth
 local agentMgr
+local roomMgr
 local watchDog
 local store_redis
 local store_sqlite
@@ -19,9 +20,10 @@ skynet.start(function()
 	-- store_mysql = skynet.uniqueservice("store_mysql")
 	skynet.uniqueservice("protoloader")
 	-- majiang = skynet.uniqueservice('mj_heshun_dianhu')
-	majiang = skynet.uniqueservice('mj_heshun_suanfen')
+	-- majiang = skynet.uniqueservice('mj_heshun_suanfen')
 	auth = skynet.uniqueservice("auth")
 	agentMgr = skynet.uniqueservice("agentmgr")
+	roomMgr = skynet.uniqueservice("roommgr")
 	watchDog = skynet.uniqueservice("watchdog")
 	skynet.newservice("room")
 

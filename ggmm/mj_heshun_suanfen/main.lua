@@ -84,6 +84,9 @@ local BB = {
 local CC = {
 	9,9,9,2,2,3
 }
+local CC1 = {
+	9,9,9,3,3,3 -- 东南西北需要特殊处理
+}
 --每种张数量 能否成搭 3*n+2
 local OPT={0,1,1,0,1,1,0,1,1,0,1,1,0,1, 1,0,1,1,0,1}
 OPT[0] = 1
@@ -93,34 +96,7 @@ local __tongji = mjlib.tongji
 local __floor = math.floor
 local __fmod = math.fmod
 local __combine = mjlib.combine
-------------------------------
-function CMD.huA(pai)
-	local t,_= __tongji(pai)
-	return CMD.huA__(t)
-end
-function CMD.huA__(t)
-	local flag = true
-	local jc = 0
-	-- util.dump(t,"CMD.hu")
-	-- skynet.error(mjlib.i2str(t[1]))
-	-- skynet.error(mjlib.i2str(t[2]))
-	-- skynet.error(mjlib.i2str(t[3]))
-	-- skynet.error(mjlib.i2str(t[4]))
-	for i=1,MAX_TP do
-		if t[i]>0 then
-			-- local key = mjlib.i2str(t[i])
-			local key = t[i]
-			local r  = CMD.get(i,key)
-			if(not r) then
-				flag = false
-				break
-			else
-				jc = jc + r
-			end
-		end
-	end
-	return flag and jc==1
-end
+local __parse = mjlib.parse
 function CMD.tingA(pai)
 	local t,tc = __tongji(pai)
 	return CMD.tingA__(t,tc)
@@ -178,21 +154,34 @@ function CMD.tingA__(t,tc)
 						p_out = __combine(i,m)
 						---------------------------	
 						local vv = vb
-						for n=max,1,-1 do
-							local v3 = v2+BB[n]
+						local max_a = CC1[i]
+						for n=max_a,1,-1 do
 							-- local tcp = {table.unpack(t)}
 							local tcp = {t[1],t[2],t[3],t[4],t[5],t[6]}
-							tcp[i]=v3 
-							-- skynet.error(i,m,n,v3)
-							if(CMD.huA__(tcp)) then							
-								p_in = __combine(i,n)
-								-- table.insert(rr,p_out.."--"..p_in)
-								rr[rc+1] = p_out.."--"..p_in
-								rc = rc+1
-							elseif(CMD.huDNFXBZ__(tcp)) then
-								p_in = __combine(i,n)
-								rr[rc+1] = p_out.."<->"..p_in
-								rc = rc+1
+							if(n==3 and (i==4 or i==5)) then
+								tcp[i]=v2
+								tcp[i-2] = t[i-2] + BB[1]
+								if(CMD.huDNFXBZ__(tcp)) then
+									p_in = __combine(i-2,1)
+									rr[rc+1] = {p_out,p_in,'dnf-1'}
+									rc = rc+1
+								end
+							else
+								local v3 = v2+BB[n]
+								tcp[i]=v3
+								if(CMD.huA__(tcp)) then							
+									p_in = __combine(i,n)
+									rr[rc+1] = {p_out,p_in}
+									rc = rc+1
+								elseif(CMD.hu13Y__(tcp)) then
+									p_in = __combine(i,n)
+									rr[rc+1] = {p_out,p_in,'13y'}
+									rc = rc+1
+								elseif(CMD.huDNFXBZ__(tcp)) then
+									p_in = __combine(i,n)
+									rr[rc+1] = {p_out,p_in,'dnf'}
+									rc = rc+1
+								end
 							end
 						end
 					end
@@ -223,22 +212,35 @@ function CMD.tingA__(t,tc)
 								--可加
 								if (ot[j][2]>0 and t[j]>0 and i~=j) then
 									--逐个add
-									local maxj = CC[j]--最大序号万条筒9东南2西北2中发白3
+									local maxj = CC1[j]--最大序号万条筒9东南2西北2中发白3
 									for n=1,maxj do
-										local v3 = BB[n]
-										-- local tcp = {table.unpack(t)}
 										local tcp = {t[1],t[2],t[3],t[4],t[5],t[6]}
 										tcp[i]=v2
-										tcp[j]=tcp[j] + v3 
-										if(CMD.huA__(tcp)) then
-											p_in = __combine(j,n)
-											-- table.insert(rr,p_out.."--"..p_in)
-											rr[rc+1] = p_out.."--"..p_in
-											rc = rc+1
-										elseif(CMD.huDNFXBZ__(tcp,tc)) then
-											p_in = __combine(j,n)
-											rr[rc+1] = p_out.."<->"..p_in
-											rc = rc+1
+										if(n==3 and (j==4 or j==5)) then
+											tcp[j-2] = t[j-2] + BB[1]
+											if(CMD.huDNFXBZ__(tcp)) then
+												p_in = __combine(j-2,1)
+												rr[rc+1] = {p_out,p_in,'dnf-2'}
+												rc = rc+1
+											end
+										else	
+											local v3 = BB[n]
+											-- local tcp = {table.unpack(t)}
+											tcp[j]=tcp[j] + v3
+											if(CMD.huA__(tcp)) then
+												p_in = __combine(j,n)
+												-- table.insert(rr,p_out.."--"..p_in)
+												rr[rc+1] = {p_out,p_in}
+												rc = rc+1
+											elseif(CMD.hu13Y__(tcp)) then
+												p_in = __combine(j,n)
+												rr[rc+1] = {p_out,p_in,'13y'}
+												rc = rc+1											
+											elseif(CMD.huDNFXBZ__(tcp,tc)) then
+												p_in = __combine(j,n)
+												rr[rc+1] = {p_out,p_in,'dnf'}
+												rc = rc+1
+											end	
 										end
 									end
 								end
@@ -256,6 +258,34 @@ function CMD.tingA__(t,tc)
 	end
 end
 ------------------------------
+function CMD.huA(pai)
+	local t,_= __tongji(pai)
+	return CMD.huA__(t)
+end
+function CMD.huA__(t)
+	local flag = true
+	local jc = 0
+	-- util.dump(t,"CMD.hu")
+	-- skynet.error(mjlib.i2str(t[1]))
+	-- skynet.error(mjlib.i2str(t[2]))
+	-- skynet.error(mjlib.i2str(t[3]))
+	-- skynet.error(mjlib.i2str(t[4]))
+	for i=1,MAX_TP do
+		if t[i]>0 then
+			-- local key = mjlib.i2str(t[i])
+			local key = t[i]
+			local r  = CMD.get(i,key)
+			if(not r) then
+				flag = false
+				break
+			else
+				jc = jc + r
+			end
+		end
+	end
+	return flag and jc==1
+end
+------------------------------
 function CMD.hu7D(pai)
 	local t,tc= __tongji(pai)
 	return CMD.hu7D__(t,tc)
@@ -270,6 +300,14 @@ function CMD.hu7D__(t,tc)
 	if(all~=14) then
 		return false
 	end
+	-- --数量偶数判断
+	-- for i=1,4 do
+	-- 	all = all + tc[i]
+	-- 	flag = flag and __fmod(tc[i],2)==0
+	-- end
+	-- if(not flag) then
+	-- 	return flag
+	-- end
 	--判断每个数量
 	for i=1,MAX_TP do
 		local v = t[i]
@@ -330,8 +368,8 @@ function CMD.ting7D__(t,tc)
 
 	if(#tj==2) then
 		--两张中出任意一张
-		rr[1] = tj[1].."--"..tj[2]
-		rr[2] = tj[2].."--"..tj[1]
+		rr[1] = {tj[2],tj[1]}
+		rr[2] = {tj[1],tj[2]}
 	elseif(#tj==0) then
 		--已经是胡牌，任意一张
 		for i=1,MAX_TP do
@@ -340,7 +378,7 @@ function CMD.ting7D__(t,tc)
 			while v>0 do
 				if(__fmod(v,10)>0) then
 					local vv = __combine(i,j)
-					rr[#rr+1] = vv.."--"..vv
+					rr[#rr+1] = {vv,vv}
 				end
 				v = __floor(v/10)
 				j = j + 1
@@ -390,6 +428,8 @@ function CMD.huDNFXBZ__(t)
 		---转换
 		tcp[2]=t[2] - i*BB[1]
 		tcp[4]=t[4] + i*BB[3]
+
+		-- skynet.error("huDNFXBZ__3_dnf",tcp[4],tcp[2])
 		---------------------
 		--可以添加长度判断
 		--可以直接查表过滤
@@ -402,6 +442,8 @@ function CMD.huDNFXBZ__(t)
 					---转换
 					tcp[3]=t[3] - j*BB[1]
 					tcp[5]=t[5] + j*BB[3]
+
+					-- skynet.error("huDNFXBZ__4_xbz",tcp[5],tcp[3])
 					----------------------
 					local r3 = tcp[3]==0 and 0 or CMD.get(3,tcp[3])
 					local r5 = tcp[5]==0 and 0 or CMD.get(5,tcp[5])
@@ -428,14 +470,25 @@ function CMD.hu13Y__(t)
 	t[5]==11 and
 	t[6]==111
 end
-
-function CMD.hu(pai)
+function CMD.hu(pai,id)
 	local t,tc= __tongji(pai)
 	local a = CMD.hu13Y__(t)
 	local b = CMD.hu7D__(t,tc)
 	local c = CMD.huA__(t)
 	local d = CMD.huDNFXBZ__(t)
-	return a or b or c or d	
+	return a or b or c or d
+end
+
+function CMD.ting(pai)
+	local t,tc = __tongji(pai)
+	local ra = CMD.tingA__(t,tc) --包括普通牌(包括中发白)，东南飞西北转，十三幺
+	local rb = CMD.ting7D__(t,tc)
+	if not (ra or rb) then
+		return false
+	end
+	local r = ra or {}
+	table.merge(r, rb or {})
+	return r
 end
 ------------------------------------
 --吊将
@@ -684,47 +737,38 @@ local function test7D()
 	util.dump(r,'CMD.ting7D__')
 end
 
-local function test_table()
-	
-	local ta = skynet.now()
-	local r
-	for i=1,10000000 do
-		r = szall[12309]
-	end
-	local tb = skynet.now()
-	skynet.error("call table[i] tm =",(tb-ta)*10)
-	skynet.sleep(10)
+local function test()
+	local ttt = {
+		{1,2,3, 4,5,6, 31,31,31, 11,12,13, 20,20 },
+		{28,29,10, 30,31,9, 32,33,34, 10,11,12, 9,9}, --东南飞西北转中发白
 
-	local ta = skynet.now()
-	local r=0
-	for i=1,10000000 do
-		-- r = szall[12309]
-		if(i>0) then
-			r=i
-		end
-	end
-	local tb = skynet.now()
-	skynet.error("call for tm =",(tb-ta)*10)
-	skynet.sleep(10)
-
-end
-
-local function testHu()
-	local ttt ={
-		{1,2,3, 4,5,6, 31,31,31, 11,12,13, 20,20},--普通
-		{28,29,10, 30,31,19, 32,33,34, 10,11,12, 9,9}, --东南飞西北转中发白
-		{1,1, 3,3, 5,5, 11,11, 15,15, 21,21, 31,31},--7对
-		{1,1,9, 10,18, 19,27, 28,29,30,31,32,33,34},--13幺
+		{1,1, 3,3, 5,5, 11,11, 15,15, 21,21, 31,30},--7对
+		{1,1,9, 10,18, 19,27, 28,29,30,31,32,33,31},--13幺
 	}
-	local ta = skynet.now()
 	local r
 	for i=1,#ttt do
 		r = CMD.hu(ttt[i])
-		skynet.error("call CMD.hu "..i ,r)
+		skynet.error("test CMD.hu "..i ,r)
+	end
+	---------------------------------------------------------
+	-- local ta = skynet.now()
+	-- local r
+	-- for i=1,#ttt do
+	-- 	r = CMD.ting(ttt[i])
+	-- 	util.dump(r,'test CMD.ting '..i)
+	-- end
+	-- local tb = skynet.now()
+	-- skynet.error("test CMD.ting tm =",(tb-ta)*10)	
+	---------------------------------------------------------
+	local ta = skynet.now()
+	local r
+	for i=1,10000 do
+		r = CMD.ting(ttt[1])
 	end
 	local tb = skynet.now()
-	skynet.error("call CMD.hu tm =",(tb-ta)*10)	
-	---------------------------------------------------------
+	skynet.error("test CMD.ting tm =",(tb-ta)*10)	
+	util.dump(r,'test CMD.ting')
+	-- skynet.error("LUA max integer",math.maxinteger)
 end
 
 skynet.start(function()
@@ -737,8 +781,7 @@ skynet.start(function()
 	-- fengpai = nil
 	-- skynet.fork(testA)
 	-- skynet.fork(test7D)
-	-- skynet.fork(test_table)
-	skynet.fork(testHu)
+	skynet.fork(test)
 	skynet.dispatch('lua',function(session, source, cmd, ...)
 		if(CMD[cmd]) then
 			local ff = CMD[cmd]

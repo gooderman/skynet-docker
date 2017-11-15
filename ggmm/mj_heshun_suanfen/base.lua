@@ -70,6 +70,7 @@ local function tongji(tb)
 	end
 	return r,rc
 end
+
 local function sub(t,id)
 	for i,v in ipairs(t) do
 		if(id==v) then
