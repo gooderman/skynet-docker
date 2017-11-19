@@ -2,8 +2,6 @@
 local skynet = require "manager"
 local util = require "util"
 local rooms={}
-local roomaddr={}
-local roomuser={}
 
 local CMD = {}
 local roomid = 100000
@@ -13,19 +11,13 @@ function CMD.gen_roomid()
 end
 function CMD.newroom(agent,user,args)
 	local roomid = CMD.gen_roomid()
-	local info = {id = roomid,owner = user.id,args = args,user=user,agent=agent}
-	local addr = skynet.newservice("room")
-	skynet.call(addr,'lua','init',info)
-	info.addr = addr
-	rooms[roomid] = info
-	roomaddr[addr] = roomid
-	roomuser[user.id] = roomid
+	local roominfo = {id = roomid,ownerid = user.id,args = args,user=user,agent=agent}
+	local addr = skynet.newservice("room",'abc')
+	skynet.call(addr,'lua','init',roominfo)
+	roominfo.addr = addr
+	rooms[roomid] = roominfo
 	return 0,roomid,args
 end
-
-function CMD.addroom(agent,roomid)
-	rooms[roomid] = true
-end	
 function CMD.findroom(agent,roomid)
 	return rooms[roomid]
 end
@@ -43,7 +35,7 @@ function CMD.joinroom(agent,user,roomid)
 	return -10
 end	
 function CMD.getroom(agent,user)
-	local roomid = roomuser[user.id]
+	local roomid = rooms[user.id]
 	if(not roomid) then
 		return -1
 	end
@@ -59,6 +51,11 @@ function CMD.getroom(agent,user)
 end
 
 
+local NTF_CMD={}
+function NTF_CMD.ntf_roomdismiss(src,roomid)
+	rooms[roomid] = nil
+end
+
 skynet.start(function()
 	skynet.dispatch('lua',function(session, source, cmd,...)
 		if(CMD[cmd]) then
@@ -66,6 +63,8 @@ skynet.start(function()
 			if(type(ff)=='function') then
 				return skynet.retpack(ff(source,...))
 			end
+		elseif(NTF_CMD[cmd]) then
+			skynet.retpack(NTF_CMD[cmd]())			
 		end
 	end)
 	skynet.register(".roommgr")

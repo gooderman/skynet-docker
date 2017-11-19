@@ -84,7 +84,7 @@ function COMMAND.close(msg)
 	local rr  = COMMAND.getroom()
 	if(rr.state==0) then
 		local roomaddr = rr.room.addr
-		skynet.call(roomaddr,'lua','quit',userinfo.id)
+		skynet.call(roomaddr,'lua','quit',skynet.self(),userinfo.id)
 	end
 	skynet.exit()
 end

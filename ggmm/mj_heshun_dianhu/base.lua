@@ -8,7 +8,7 @@ local mj = {}
 -- 1-9 --万
 -- 10-18 --条
 -- 19-27 --筒
--- 28-35 --东南西北中发白
+-- 28-34 --东南西北中发白
 local map=
 {
 	1,2,3,4,5,6,7,8,9,
@@ -70,7 +70,26 @@ end
 local function add(t,id)
 	table.insert(t,id)
 end
-
+------------------------
+local function gencards()
+	local r = {}
+	for i=1,4 do
+		for j=1,34 do
+			table.insert(r,j)
+		end
+	end
+	math.randomseed(os.time())
+	local rr = {}
+	local ct = #r
+	while ct>0 do
+		local i = math.random(1,ct)
+		rr[#rr+1] = r[i]
+		ct = ct - 1 
+		table.remove(r,i)
+	end
+	return rr
+end
+------------------------
 local function test()
 	local t={
 		1,2,3,4,5,
@@ -80,17 +99,21 @@ local function test()
 	}
 	local tb = tongji(t)
 	util.dump(tb)
+	local tb = gencards()
+	util.dump(tb)
 end
-------------------------
 ------------------------
 --解析牌
 mj.parse = parse
 mj.combine = combine
 --统计分类
 mj.tongji = tongji
+mj.gencards = gencards
 --插入
 mj.sub = sub
 mj.add = add
+
+test()
 return mj
 
 
