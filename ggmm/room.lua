@@ -7,6 +7,7 @@ local agents = {}
 local users = {}
 local args = {}
 local readys = {}
+local cards = {}
 
 -------------------------------------------
 local mjlib = nil
@@ -19,7 +20,7 @@ local function __isReady(userid)
 	return readys[userid]
 end
 local function __fapai()
-	
+	cards  = mjlib.gencards()
 end
 
 -------------------------------------------
@@ -32,7 +33,6 @@ function CMD.init(info)
 	roomid = info.id
 	ownerid = info.ownerid
 	args = info.args
-	table.insert(users,{user=info.user,agent=info.agent})
 	args.id = roomid
 	args.ownerid = ownerid
 	args.addr = skynet.self()
@@ -40,8 +40,10 @@ function CMD.init(info)
 	if(args.wanfa==1) then
 		mjcmd = require "mj_heshun_dianhu.lib"
 		mjlib = require "mj_heshun_dianhu.base"
+	elseif(args.wanfa==2) then
+		mjcmd = require "mj_heshun_suanfen.lib"
+		mjlib = require "mj_heshun_suafen.base"	
 	end
-
 	return true
 end
 --user get
@@ -52,17 +54,24 @@ end
 function CMD.join(agent,userinfo)
 	for i,u in ipairs(users) do
 		if(u.user.id==userinfo.id) then
-			users[i].user=userinfo
+
+			users[i].user.online = true
+
 			users[i].agent=agent
-			skynet.timeout(10,function()
-				skynet.call(agent,'lua','ntf_gameready')
-			end)
 			return 0,args
 		end
 	end
 	if(#users<args.renshu) then
 		__setReady(userinfo.id,false)
+		userinfo.chair = #users+1
+		userinfo.online = true
+		userinfo.ting = false
+		userinfo.hu = false
+		util.dump(userinfo,"CMD.join userinfo")
 		table.insert(users,{user=userinfo,agent=agent})
+
+		skynet.send(agent,'lua','ntf_join',userinfo)
+		
 		return 0,args
 	else
 		return -1
@@ -73,7 +82,9 @@ function CMD.quit(agent,userid)
 	for i,u in ipairs(users) do
 		if(u.user.id==userid) then
 			skynet.error('room CMD.quit',userid)
+			
 			u.agent = nil
+			u.online = false
 			
 			__setReady(userid,nil)
 
@@ -138,7 +149,6 @@ end
 skynet.start(function()
 	
 	-- skynet.fork(test)
-	CMD.init({args={wanfa=1}})
 	skynet.dispatch('lua',function(session, source, cmd,...)
 		if(CMD[cmd]) then
 			local ff = CMD[cmd]

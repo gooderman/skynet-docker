@@ -16,7 +16,7 @@ function CMD.newroom(agent,user,args)
 	skynet.call(addr,'lua','init',roominfo)
 	roominfo.addr = addr
 	rooms[roomid] = roominfo
-	return 0,roomid,args
+	return 0,roomid,args,addr
 end
 function CMD.findroom(agent,roomid)
 	return rooms[roomid]
@@ -30,7 +30,7 @@ function CMD.joinroom(agent,user,roomid)
 		return -1
 	else
 		local st,info = skynet.call(room.addr,'lua','join',agent,user)
-		return st,info
+		return st,info,room.addr
 	end
 	return -10
 end	
@@ -45,7 +45,7 @@ function CMD.getroom(agent,user)
 	end
 	local info = skynet.call(room.addr,'lua','getinfo',agent,user)
 	if(info) then
-		return 0,info
+		return 0,info,room.addr
 	end
 	return -1
 end

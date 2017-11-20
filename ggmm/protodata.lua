@@ -106,11 +106,11 @@ heartup 2 {
 
 login 3 {
  request {
-     player 0 : Player
+     user 0 : User
  }
  response {
     state 0 : integer
-    player 1 : Player
+    user 1 : User
  }
 }
 
@@ -121,7 +121,7 @@ kickoff 4 {
  }
 }
 
-getroom 5 {
+getroom 100 {
  request {
     userid 0 : integer
  }
@@ -131,7 +131,7 @@ getroom 5 {
  }
 }
 
-newroom 6 {
+newroom 101 {
  request {
     type 0 : integer
     renshu 1 : integer
@@ -143,37 +143,64 @@ newroom 6 {
  }
 }
 
-joinroom 7 {
+enterroom 102 {
  request {
     roomid 0 : integer
  }
  response {
     state 0 : integer
-    room 1 : Room
  }
 }
 
-gameinfo 8 {
+joinroom 103 {
  request {
     roomid 0 : integer
  }
  response {
     state 0 : integer
+ }
+}
+
+joinroom_ntf 104 {
+ request {
+    player 0 : Player
+ }
+ response {
+    state 0 : integer
+ }
+}
+
+online_ntf 105 {
+ request {
+    chair 0 : integer
+    online 1 : boolean
+ }
+ response {
+
+ }
+}
+
+
+gameinfo_ntf 201 {
+ request {
     game 1 : GameInfo
  }
+ response {
+    state 0 : integer
+ }
 }
 
-gameready 9 {
+gameready 202 {
  request {
     ready 0 : integer
  }
  response {
     chair 0 : integer
-    ready 1 : integer
+    ready 1 : boolean
  }
 }
 
-gamestart 10 {
+gamestart 203 {
  request {
  }
  response {
@@ -182,7 +209,7 @@ gamestart 10 {
  }
 }
 
-chi_tip 11 {
+chi_tip 204 {
  request {
 
  }
@@ -194,7 +221,7 @@ chi_tip 11 {
  }
 }
 
-chi 12 {
+chi 205 {
  request {
     cards 0 : *integer
  }
@@ -203,7 +230,7 @@ chi 12 {
  }
 }
 
-chi_ntf 13 {
+chi_ntf 206 {
  request {
  }
  response {
@@ -215,7 +242,7 @@ chi_ntf 13 {
  }
 }
 
-peng_tip 14 {
+peng_tip 207 {
  request {
 
  }
@@ -227,7 +254,7 @@ peng_tip 14 {
  }
 }
 
-peng 15 {
+peng 208 {
  request {
     cards 0: *integer
  }
@@ -236,7 +263,7 @@ peng 15 {
  }
 }
 
-peng_ntf 16 {
+peng_ntf 209 {
  request {
 
  }
@@ -248,7 +275,7 @@ peng_ntf 16 {
  }
 }
 
-gang_tip 17 {
+gang_tip 210 {
  request {
 
  }
@@ -260,7 +287,7 @@ gang_tip 17 {
  }
 }
 
-gang 18 {
+gang 211 {
  request {
     cards 0: *integer
  }
@@ -269,7 +296,7 @@ gang 18 {
  }
 }
 
-gang_ntf 19 {
+gang_ntf 212 {
  request {
  }
  response {
@@ -281,7 +308,7 @@ gang_ntf 19 {
  }
 }
 
-chu 20 {
+chu 213 {
  request {
     cards 0 : integer
  }
@@ -290,7 +317,7 @@ chu 20 {
  }
 }
 
-chu_ntf 21 {
+chu_ntf 214 {
  request {
 
  }
@@ -301,7 +328,7 @@ chu_ntf 21 {
  }
 }
 
-ting 22 {
+ting 215 {
  request {
     card 0 : integer
  }
@@ -312,7 +339,7 @@ ting 22 {
  }
 }
 
-hu 23 {
+hu 216 {
  request {
  }
  response {
@@ -321,7 +348,7 @@ hu 23 {
  }
 }
 
-getcard 24 {
+getcard 217 {
  request {
  }
  response {
