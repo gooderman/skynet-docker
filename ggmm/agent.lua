@@ -34,17 +34,22 @@ local __ip
 local __roomid
 local __roomaddr 
 local __userinfo
+local __selfaddr
 
 local COMMAND = {}
 local function decode_request(msg)
 	local cmd,data,response,ud = decode_msg(msg)
 	-- skynet.error('agent decode_msg',cmd)
-	if(cmd and COMMAND[cmd] and data) then
-		local rsp = COMMAND[cmd](data)
-		if(rsp and response) then
-			local reqdata = response(rsp,ud)
-			-- skynet.error('agent response ',string.len(reqdata))
-			write(__fd,reqdata,string.len(reqdata))
+	if(cmd and data) then
+		if(COMMAND[cmd]) then
+			local rsp = COMMAND[cmd](data)
+			if(rsp and response) then
+				local reqdata = response(rsp,ud)
+				-- skynet.error('agent response ',string.len(reqdata))
+				write(__fd,reqdata,string.len(reqdata))
+			end
+		elseif(__roomaddr) then
+			skynet.send(__roomaddr,'lua','gcmd',cmd,data)	
 		end
 	end
 end
@@ -161,6 +166,10 @@ function NTF_CMD.ntf_gameinfo(info)
 	local reqdata = send_request("gameinfo_ntf",{game=info},1,"")
 	write(__fd,reqdata,string.len(reqdata))
 end
+function NTF_CMD.ntf_gamestart(info)
+	local reqdata = send_request("gamestart_ntf",{game=info},1,"")
+	write(__fd,reqdata,string.len(reqdata))
+end
 function NTF_CMD.ntf_join(player)
 	local reqdata = send_request("joinroom_ntf",{player=player},1,"")
 	write(__fd,reqdata,string.len(reqdata))
@@ -174,6 +183,8 @@ end
 
 
 skynet.start(function()
+
+	__selfaddr = skynet.self()
 
 	sp = sprotoloader.load(1)
 	host = sp:host('package')
@@ -190,6 +201,7 @@ skynet.start(function()
 		end
 	end
 
+	
 	store_sqlite = skynet.uniqueservice("store_sqlite")
 
 	skynet.dispatch('lua',function(session, source, cmd,...)

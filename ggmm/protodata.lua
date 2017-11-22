@@ -26,8 +26,9 @@ local str =
      headimg 4 : string
      chair 5 : integer
      online 6 : boolean
-     ting 7 : boolean
-     hu 8 : boolean
+     ready 7: boolean
+     ting 8 : boolean
+     hu 9 : boolean
 }
 
 .RoomArgs {
@@ -67,10 +68,10 @@ local str =
 
 .GameState {
     state 0 : integer
-    curjushu 1 : integer
+    jushu 1 : integer
     banker 2 : integer #庄家
-    cards 3 : *Cards(chair) #玩家的牌
-    deskcards 4 : *integer #剩余未翻的牌
+    cards 3 : *Cards #玩家的牌
+    cardnumb 4 : integer #剩余未翻的牌
     winner 5 : *integer
     score 6 : *Score
 }
@@ -135,7 +136,8 @@ newroom 101 {
  request {
     type 0 : integer
     renshu 1 : integer
-    intro 2 : string
+    jushu 2 : integer
+    wanfa 3 : integer
  }
  response {
     state 0 : integer
@@ -183,14 +185,14 @@ online_ntf 105 {
 
 gameinfo_ntf 201 {
  request {
-    game 1 : GameInfo
+    game 0 : GameInfo
  }
  response {
     state 0 : integer
  }
 }
 
-gameready 202 {
+ready 202 {
  request {
     ready 0 : integer
  }
@@ -200,12 +202,12 @@ gameready 202 {
  }
 }
 
-gamestart 203 {
+gamestart_ntf 203 {
  request {
+    game 0 : GameInfo
  }
  response {
-    state 0 : integer
-    game 1 : GameInfo
+
  }
 }
 

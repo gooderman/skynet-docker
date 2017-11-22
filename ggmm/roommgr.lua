@@ -11,7 +11,7 @@ function CMD.gen_roomid()
 end
 function CMD.newroom(agent,user,args)
 	local roomid = CMD.gen_roomid()
-	local roominfo = {id = roomid,ownerid = user.id,args = args,user=user,agent=agent}
+	local roominfo = {id = roomid,owner = user.id,args = args,user=user,agent=agent}
 	local addr = skynet.newservice("room",'abc')
 	skynet.call(addr,'lua','init',roominfo)
 	roominfo.addr = addr

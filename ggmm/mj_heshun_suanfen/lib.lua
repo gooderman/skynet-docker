@@ -1,7 +1,7 @@
 local skynet = require "skynet"
 require "manager"
-local socket = require "socket"
-local proxy = require "socket_proxy"
+-- local socket = require "socket"
+-- local proxy = require "socket_proxy"
 local util = require "util"
 require "functions"
 local mjlib = import(".base",...) 

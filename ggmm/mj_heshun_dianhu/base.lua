@@ -113,7 +113,7 @@ mj.gencards = gencards
 mj.sub = sub
 mj.add = add
 
-test()
+-- test()
 return mj
 
 
