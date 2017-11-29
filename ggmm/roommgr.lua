@@ -2,6 +2,14 @@
 local skynet = require "manager"
 local util = require "util"
 local rooms={}
+--[[
+id = roomid,
+owner = user.id,
+args = args,
+user=user,
+agent=agent,
+addr=addr
+]]--
 
 local CMD = {}
 local roomid = 100000
@@ -9,14 +17,23 @@ function CMD.gen_roomid()
 	roomid = roomid+1
 	return roomid
 end
-function CMD.newroom(agent,user,args)
+function CMD.newroom(agent,user,data)
 	local roomid = CMD.gen_roomid()
-	local roominfo = {id = roomid,owner = user.id,args = args,user=user,agent=agent}
+	local roominfo = {
+		id = roomid,
+		owner = user.id,
+		type = data.type,
+		args = data.args,
+		user=user,
+		agent=agent
+	}
 	local addr = skynet.newservice("room",'abc')
 	skynet.call(addr,'lua','init',roominfo)
+
 	roominfo.addr = addr
+
 	rooms[roomid] = roominfo
-	return 0,roomid,args,addr
+	return 0,roominfo,addr
 end
 function CMD.findroom(agent,roomid)
 	return rooms[roomid]
@@ -29,8 +46,8 @@ function CMD.joinroom(agent,user,roomid)
 	if not room  then
 		return -1
 	else
-		local st,info = skynet.call(room.addr,'lua','join',agent,user)
-		return st,info,room.addr
+		local st,info,addr = skynet.call(room.addr,'lua','join',agent,user)
+		return st,info,addr
 	end
 	return -10
 end	

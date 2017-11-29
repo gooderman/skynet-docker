@@ -130,24 +130,23 @@ function COMMAND.getroom()
 end
 
 function COMMAND.newroom(data)
-	local state,roomid,info,addr = skynet.call('.roommgr','lua','newroom',__userinfo,data)
+	local state,info,addr = skynet.call('.roommgr','lua','newroom',__userinfo,data)
 	if(state==0) then
-		info.id = roomid
 	end
 	return {state = state,room = info}
 end
 
 function COMMAND.enterroom(data)
-	local st,info,addr = skynet.call('.roommgr','lua','joinroom',__userinfo,data.roomid)
-	if(addr) then
+	local state,info,addr = skynet.call('.roommgr','lua','joinroom',__userinfo,data.roomid)
+	if(state==0) then
 		__roomaddr = addr
 	end
 	return {state = state,room = info}
 end
 
 function COMMAND.joinroom(data)
-	local st,info,addr = skynet.call('.roommgr','lua','joinroom',__userinfo,data.roomid)
-	if(addr) then
+	local state,info,addr = skynet.call('.roommgr','lua','joinroom',__userinfo,data.roomid)
+	if(state==0) then
 		__roomaddr = addr
 	end
 	return {state = state,room = info}

@@ -1,14 +1,17 @@
 local skynet = require "skynet"
 local util = require 'util'
+local sproto = require "sproto"
+local sprotoloader = require "sprotoloader"
+local ___sp = nil
 ------------------------------------------------------------
-local roominfo = {}
+local ___roominfo = {}
 -- .Room {
 --      id 0 : integer
 --      owner 1 : integer
 --      type 2 : integer
 --      args 3 : RoomArgs
 -- }
-local gamestate = {}
+local ___gamestate = {}
 -- .GameState {
 --     state 0 : integer
 --     jushu 1 : integer
@@ -18,86 +21,103 @@ local gamestate = {}
 --     winner 5 : *integer
 --     score 6 : *Score
 -- }
-local gameinfo = {}
+local ___gameinfo = {}
 -- .GameInfo {
 --     rooom 0 : Room
 --     player 1 : *Player
 --     state 2 : GameState
 -- }
-local players = {} --{Player,agent}
+local ___players = {} --{info=Player,agent=agent}
 -- .Player {
 --      id 0 : integer
 --      name 1 : string
 --      gender 3 : integer
 --      headimg 4 : string
+
 --      chair 5 : integer
 --      online 6 : boolean
 --      ready 7: integer
 --      ting 8 : boolean
 --      hu 9 : boolean
 -- }
-local roomid = 0
-local owner = 0
-local args = {}
-local readys = {}
-local cards = {}
-local cardidx = 0
+local ___roomid = 0
+local ___owner = 0
+local ___args = {}
+-- .RoomArgs {
+--      renshu 0 : integer
+--      jushu 1 : integer
+--      wanfa 2 :integer
+-- }
+local ___self = 0
+local ___cards = {}
+local ___cardidx = 0
 
 -------------------------------------------
 local mjlib = {}
 local mjcmd = {}
 --logic
 local function __fapai()
-	cards  = mjlib.gencards()
+	___cards  = mjlib.gencards()
 
-	local n = #players
+	local n = #___players
 
 	local cds = {}
 	for i=1,n do
 		cds[i] = {}
 	end
+
+	___cardidx=1
 	for j=1,13 do
 		for i=1,n do
-			local idx = (j-1)*n+i
-			cds[i][j] = cards[idx]
+			cds[i][j] = ___cards[___cardidx]
+			___cardidx = ___cardidx + 1
 		end
 	end
-	cds[1][14] = cards[13*n+1]
-	cardidx = 13*n+1+1
+	cds[1][14] = ___cards[___cardidx]
+	___cardidx = ___cardidx+1
 
-	gamestate.cardnumb = #cards - 13*n -1
-	local banker = gamestate.banker
+	-- util.dump(cds,'cds',6)
+
+	___gamestate.cardnumb = #___cards - ___cardidx + 1
+	local banker = ___gamestate.banker
 	local ii=1
-	for i=banker,banker+n do
+	for i=banker,banker+n-1 do
 		local idx = math.fmod(i,n)
 		if(idx==0) then idx=n end
-		gamestate.cards[idx] = cds[ii]
+
+		local cards = ___sp:default("Cards")
+		
+		cards.chair = idx
+		cards.hand=cds[ii]
+		-- skynet.error("___gamestate.cards[idx]",idx)
+		___gamestate.cards[idx] = cards
 		ii = ii+1
 	end
+	-- util.dump(___gamestate.cards,'cds',6)
 end
 
 local function __init()
-	roominfo = {
+	___sp = sprotoloader.load(1)
+	___roominfo = {
 		id = 0,
 		owner = 0,
 		type = 0,
-		args = {}
-
+		args = ___args
 	}
-	gamestate = {
+	___gamestate = {
 		state=0,
     	jushu=1,
     	maxjushu = 4,
-    	banker=1,
+    	banker=2,
     	cards={},
     	deskcards={},
     	winner={},
     	score={},
 	}
-	gameinfo = {
-		room = roominfo,
-		player = players,
-		state = gamestate
+	___gameinfo = {
+		room = ___roominfo,
+		player = ___players,
+		state = ___gamestate
 	}
 end
 
@@ -108,16 +128,16 @@ local CMD = {}
 --room = {owner = userid,args = args,user}
 --args = {renshu,jushu,wanfa}
 function CMD.init(info)	
-	roominfo = info
-	roomid = info.id
-	owner = info.owner
-	args = info.args
-	args.addr = skynet.self()
+	___roominfo = info
+	___roomid = info.id
+	___owner = info.owner
+	___args = info.args
+	___self = skynet.self()
 
-	if(args.wanfa==1) then
+	if(___args.wanfa==1) then
 		mjcmd = require "mj_heshun_dianhu.lib"
 		mjlib = require "mj_heshun_dianhu.base"
-	elseif(args.wanfa==2) then
+	elseif(___args.wanfa==2) then
 		mjcmd = require "mj_heshun_suanfen.lib"
 		mjlib = require "mj_heshun_suafen.base"	
 	end
@@ -125,44 +145,43 @@ function CMD.init(info)
 end
 --user get
 function CMD.getinfo()
-	return roominfo
+	return ___roominfo
 end
 --user join
-function CMD.join(agent,userinfo)
-	for i,u in ipairs(players) do
-		if(u.user.id==userinfo.id) then
-			u.user.online = true
+function CMD.join(agent,user)
+	for i,u in ipairs(___players) do
+		if(u.info.id==user.id) then
+			u.info.online = true
 			u.agent=agent
-			return 0,roominfo
+			return 0,___roominfo,___self
 		end
 	end
-	if(#players<args.renshu) then
-		userinfo.ready = false
-		userinfo.chair = #players+1
-		userinfo.online = true
-		userinfo.ting = false
-		userinfo.hu = false
-		table.insert(players,{user=userinfo,agent=agent})
-		util.dump(userinfo,"CMD.join userinfo")
+	if(#___players<___args.renshu) then
+		user.ready = false
+		user.chair = #___players+1
+		user.online = true
+		user.ting = false
+		user.hu = false
+		table.insert(___players,{info=user,agent=agent})
+		util.dump(user,"CMD.join user")
 		--通知
-		for i=1,#players-1 do
-			local user = players[i]
-			local __agent = user.agent
+		for i=1,#___players-1 do
+			local __agent = ___players[i].agent
 			if(__agent) then
-				skynet.send(__agent,'lua','ntf_join',userinfo)
+				skynet.send(__agent,'lua','ntf_join',user)
 			end
 		end
 
-		local __players = {}
-		for i=1,#players do
-			__players[#__players+1] = players[i].user
+		local players = {}
+		for i=1,#___players do
+			players[#players+1] = ___players[i].info
 		end
 
-		gameinfo.player = __players
+		___gameinfo.player = players
 
-		skynet.send(agent,'lua','ntf_gameinfo',gameinfo)
+		skynet.send(agent,'lua','ntf_gameinfo',___gameinfo)
 		
-		return 0,args
+		return 0,___roominfo,___self
 	else
 		return -1
 	end
@@ -174,17 +193,17 @@ end
 local GCMD = {}
 --user quit or dismiss by owner
 function GCMD.quit(agent,data)
-	for i,u in ipairs(players) do
-		if(u.user.id==userid) then
+	for i,u in ipairs(___players) do
+		if(u.info.id==userid) then
 			skynet.error('room CMD.quit',userid)
 			
 			u.agent = nil
-			u.user.online = false
-			u.user.ready = false
+			u.info.online = false
+			u.info.ready = false
 
-			if(owner==userid) then
+			if(___owner==userid) then
 				skynet.call(agent,'lua','ntf_roomdismiss')
-				skynet.call('.roommgr','lua','ntf_roomdismiss',roomid)
+				skynet.call('.roommgr','lua','ntf_roomdismiss',___roomid)
 				skynet.timeout(10,function()
 					skynet.exit()
 				end)		
@@ -195,25 +214,26 @@ function GCMD.quit(agent,data)
 end
 
 function GCMD.ready(agent,data)
-	for i,u in ipairs(players) do
+	for i,u in ipairs(___players) do
 		if(u.agent==agent) then
-			skynet.error('room CMD.ready',u.user.id)
-			u.user.ready = true
+			skynet.error('room CMD.ready',u.info.id)
+			u.info.ready = true
 			break
 		end
 	end
-	local n = args.renshu
+	local n = ___args.renshu
 	local m = 0
-	for i,u in ipairs(players) do
-		if(u.agent and u.user.ready) then
+	for i,u in ipairs(___players) do
+		if(u.agent and u.info.ready) then
 			m = m + 1
 		end
 	end
 	if(n==m) then
+		skynet.error('room CMD.ready to start')
 		__fapai()
-		gamestate.state = 1
-		for i,u in ipairs(players) do
-			skynet.send(u.agent,'lua','ntf_gamestart',gameinfo)
+		___gamestate.state = 1
+		for i,u in ipairs(___players) do
+			skynet.send(u.agent,'lua','ntf_gamestart',___gameinfo)
 		end
 	end
 end

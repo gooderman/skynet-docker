@@ -34,6 +34,7 @@ local str =
 .RoomArgs {
      renshu 0 : integer
      jushu 1 : integer
+     wanfa 2 :integer
 }
 
 .Room {
@@ -135,9 +136,7 @@ getroom 100 {
 newroom 101 {
  request {
     type 0 : integer
-    renshu 1 : integer
-    jushu 2 : integer
-    wanfa 3 : integer
+    args 1: RoomArgs
  }
  response {
     state 0 : integer
