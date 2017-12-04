@@ -1,6 +1,12 @@
 -- local skynet = require "skynet"
 local skynet = require "manager"
+local cjson = require "cjson"
 local util = require "util"
+local roomtypes={
+	[1] = 'common',
+	[10] = 'room_heshun_dianhu',
+	[11] = 'room_heshun_suanfen'
+}
 local rooms={}
 --[[
 id = roomid,
@@ -17,7 +23,12 @@ function CMD.gen_roomid()
 	roomid = roomid+1
 	return roomid
 end
+
 function CMD.newroom(agent,user,data)
+	local name = roomtypes[data.type]
+	if(not name) then
+		return
+	end
 	local roomid = CMD.gen_roomid()
 	local roominfo = {
 		id = roomid,
@@ -27,14 +38,13 @@ function CMD.newroom(agent,user,data)
 		user=user,
 		agent=agent
 	}
-	local addr = skynet.newservice("room",'abc')
+	local addr = skynet.newservice(name,'abc')
 	skynet.call(addr,'lua','init',roominfo)
-
 	roominfo.addr = addr
-
 	rooms[roomid] = roominfo
 	return 0,roominfo,addr
 end
+
 function CMD.findroom(agent,roomid)
 	return rooms[roomid]
 end
