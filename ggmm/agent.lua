@@ -73,8 +73,15 @@ function COMMAND.login(data)
 		userdb = skynet.call(store_sqlite,'lua','new_user',data.user)
 	end
 	if(userdb) then
-		__userinfo = userdb
-		return {state=0,user=userdb}
+		if(__userinfo and __userinfo.id~=userdb.id) then
+			skynet.fork(function()
+				COMMAND.close("another user login")
+			end)
+			return {state=2}
+		else
+			__userinfo = userdb
+			return {state=0,user=userdb}
+		end
 	else
 		skynet.fork(function()
 				COMMAND.close("login fail close")

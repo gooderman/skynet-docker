@@ -248,7 +248,7 @@ end
 
 function CMD.dismiss()
 	skynet.call('.roommgr','lua','ntf_dismiss',___roomid)
-	for i=1,#___players-1 do
+	for i=1,#___players do
 		___ntf(u.agent,'dismiss_ntf')
 	end
 	skynet.timeout(10,function()
@@ -262,7 +262,7 @@ end
 --online_ntf
 function GCMD.online_ntf(agent,chair,online)
 	local cmd = 'online_ntf'
-	for i=1,#___players-1 do
+	for i=1,#___players do
 		local _agent = ___players[i].agent
 		if(_agent and _agent~=agent) then
 			___data_ntf(u.agent,cmd,{chair = chair, online = online})				
@@ -272,7 +272,7 @@ end
 --joinroom_ntf
 function GCMD.joinroom_ntf(agent,info)
 	local cmd = 'joinroom_ntf'
-	for i=1,#___players-1 do
+	for i=1,#___players do
 		local _agent = ___players[i].agent
 		if(_agent and _agent~=agent) then
 			___data_ntf(u.agent,cmd,{player = info})				
@@ -282,14 +282,14 @@ end
 --quit_ntf
 function GCMD.quit_ntf(agent,chair)
 	local cmd = 'quit_ntf'
-	for i=1,#___players-1 do
+	for i=1,#___players do
 		___data_ntf(u.agent,cmd,{chair = chair})
 	end
 end
 --dismiss_ntf
 function GCMD.dismiss_ntf(chair)
 	local cmd = 'dismiss_ntf'
-	for i=1,#___players-1 do
+	for i=1,#___players do
 		___data_ntf(u.agent,cmd,{chair = chair})
 	end
 end
@@ -297,14 +297,14 @@ end
 function GCMD.dismiss_vote_ntf(vote)
 	local cmd = 'dismiss_vote_ntf'
 	local time = vote.time_end - vote.time_start
-	for i=1,#___players-1 do
+	for i=1,#___players do
 		___data_ntf(u.agent,cmd,{chair = vote.chair,agree=vote.agree,dismiss=vote.dismiss,time = time})
 	end
 end
 --gameinfo_ntf
 function GCMD.gameinfo_ntf(agent,gameinfo)
 	local cmd = 'gameinfo_ntf'
-	for i=1,#___players-1 do
+	for i=1,#___players do
 		local _agent = ___players[i].agent
 		if(_agent==agent) then
 			___data_ntf(agent,cmd,{game = gameinfo})
