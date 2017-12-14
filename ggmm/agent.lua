@@ -37,17 +37,30 @@ local __userinfo
 local __selfaddr
 ---------------------------------------------------------------
 local COMMAND = {}
-function COMMAND.close(msg)
+local __closing
+function COMMAND.closed(msg)
+	if(__closing) then
+		return
+	end
 	skynet.error(msg)
 	skynet.send(agentMgr,'lua','agent-closed',fd)
 	proxy.close(__fd)
 	local rr  = COMMAND.getroom()
 	if(rr.state==0) then
 		local roomaddr = rr.room.addr
-		skynet.call(roomaddr,'lua','quit',skynet.self(),__userinfo.id)
+		skynet.send(roomaddr,'lua','agent_closed',skynet.self(),__userinfo.id)
 	end
 	skynet.exit()
 end
+
+function COMMAND.close(msg)
+	__closing = true
+	skynet.error(msg)
+	skynet.send(agentMgr,'lua','agent-closed',fd)
+	proxy.close(__fd)
+	skynet.exit()
+end
+
 function COMMAND.heartbeat(data)
 	__heartupid = __heartupid + 1
 	local t = {id = __heartupid}
@@ -120,6 +133,14 @@ local NTF_CMD={}
 function NTF_CMD.data_ntf(type,cmd,data)
 	return COMMAND.datadn(type,cmd,data)
 end
+function NTF_CMD.quit_ntf()
+	__roomid = 0
+	__roomaddr = 0
+end
+function NTF_CMD.dismiss_ntf()
+	__roomid = 0
+	__roomaddr = 0
+end
 ---------------------------------------------------------------
 ---------------------------------------------------------------
 local function decode_request(msg)
@@ -145,7 +166,7 @@ local function loop()
 		if ok then
 			pcall(decode_request,msg)
 		else	
-			COMMAND.close("agent fail read")
+			COMMAND.closed("agent fail read")
 			return
 		end
 	end

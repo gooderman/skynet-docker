@@ -25,6 +25,5 @@ skynet.start(function()
 	agentMgr = skynet.uniqueservice("agentmgr")
 	roomMgr = skynet.uniqueservice("roommgr")
 	watchDog = skynet.uniqueservice("watchdog")
-	-- skynet.newservice("room")
-
+	-- skynet.newservice("room_heshun_dianhu")
 end)

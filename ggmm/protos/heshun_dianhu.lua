@@ -198,14 +198,28 @@ local str =
 }
 
 .quit_req {
+
+}
+
+.quit_ntf {
+    chair 0 : integer
+}
+
+.dismiss_vote_ntf {
+    chair 0 :integer
+    agree 1 :*integer
+    dismiss 2:integer ##0 wait, 1 dismiss, 2 no dismiss 
+    time 3:integer ##second
+}
+
+.dismiss_vote_req {
+    agree 0 :boolean
+}
+
+.dismiss_ntf {
     chair 0 :integer
 }
 
-.quit_req_ntf {
-    chair 0 :integer
-    agree 1 :*integer
-    disagree 2 :*integer
-}
 
 ]]
 

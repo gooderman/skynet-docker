@@ -31,17 +31,23 @@ local ___gameinfo = {}
 -- }
 local ___players = {} --{info=Player,agent=agent}
 -- .Player {
---      id 0 : integer
---      name 1 : string
---      gender 3 : integer
---      headimg 4 : string
-
---      chair 5 : integer
---      online 6 : boolean
---      ready 7: integer
---      ting 8 : boolean
---      hu 9 : boolean
+--      user  0 : UserBase
+--      chair 1 : integer
+--      online 2 : boolean
+--      ready 3: boolean
+--      ting 4 : boolean
+--      hu 5 : boolean
 -- }
+local ___dismiss_vote={}
+-- {
+-- 	time #remaintime
+-- 	chair #sender
+-- 	agree 
+--  dismiss
+--  time_start
+--  time_end
+-- }
+-----------------------
 local ___roomid = 0
 local ___owner = 0
 local ___args = {}
@@ -119,11 +125,21 @@ local function __init()
 	}
 	___gameinfo = {
 		room = ___roominfo,
-		player = ___players,
+		player = {},
 		state = ___gamestate
 	}
 end
 
+local function ___data_ntf(agent,cmd,con)
+	local data = ___sp:encode(cmd,con)
+	skynet.send(agent,'lua','data_ntf',___sptp,cmd,data)
+end
+local function ___ntf(agent,cmd,con)
+	skynet.send(agent,'lua',cmd,con)
+end
+
+--cmd from agent
+local GCMD = {}
 -------------------------------------------
 ---cmd from roommgr
 local CMD = {}
@@ -150,76 +166,154 @@ end
 --user join
 function CMD.join(agent,user)
 	for i,u in ipairs(___players) do
-		if(u.info.id==user.id) then
-			u.info.online = true
+		local uuu = u.info.user
+		local info = u.info
+		if(uuu.id==user.id) then
+			info.online = true
 			u.agent=agent
+------------------------------------------------------
+--通知
+			skynet.fork(function()
+				GCMD.online_ntf(agent,info.chair,true)
+			end)
+			skynet.fork(function()
+				local players = {}
+				for i=1,#___players do
+					players[#players+1] = ___players[i].info
+				end
+				___gameinfo.player = players
+
+				GCMD.gameinfo_ntf(agent,___gameinfo)
+			end)			
+------------------------------------------------------				
 			return 0,___roominfo,___self
 		end
 	end
+	local info={}
+	info.user=user
 	if(#___players<___args.renshu) then
-		user.ready = false
-		user.chair = #___players+1
-		user.online = true
-		user.ting = false
-		user.hu = false
-		table.insert(___players,{info=user,agent=agent})
-		util.dump(user,"CMD.join user")
-		--通知
-		for i=1,#___players-1 do
-			local __agent = ___players[i].agent
-			if(__agent) then
-				skynet.send(__agent,'lua','ntf_join',user)
-			end
-		end
-
-		local players = {}
-		for i=1,#___players do
-			players[#players+1] = ___players[i].info
-		end
-
-		___gameinfo.player = players
-
-		-- skynet.send(agent,'lua','ntf_gameinfo',___gameinfo)
 		
+		info.chair = #___players+1
+		info.ready = false
+		info.online = true
+		info.ting = false
+		info.hu = false
+		
+		table.insert(___players,{info=info,agent=agent})
+		util.dump(info,"CMD.join user")		
+------------------------------------------------------
+--通知
+		skynet.fork(function()
+			GCMD.joinroom_ntf(agent,info)
+		end)
+		skynet.fork(function()				
+			local players = {}
+			for i=1,#___players do
+				players[#players+1] = ___players[i].info
+			end
+			___gameinfo.player = players
+
+			GCMD.gameinfo_ntf(agent,___gameinfo)
+		end)
+------------------------------------------------------	
 		return 0,___roominfo,___self
 	else
 		return -1
 	end
 end
-function CMD.close()
-	skynet.exit()
-end
 
-function CMD.quit(agent,userid)
+function CMD.agent_closed(agent,userid)
 	for i,u in ipairs(___players) do
-		if(u.info.id==userid) then
+		local uuu = u.info.user
+		local info = u.info
+		if(uuu.id==userid) then
 			skynet.error('room CMD.quit',userid)
-			
+			info.online = false
+			info.ready = false
 			u.agent = nil
-			u.info.online = false
-			u.info.ready = false
-
-			if(___owner==userid) then
-				skynet.call(agent,'lua','ntf_roomdismiss')
-				skynet.call('.roommgr','lua','ntf_roomdismiss',___roomid)
-				skynet.timeout(10,function()
-					skynet.exit()
-				end)
-			end
+----------------------------------
+			skynet.fork(function()
+				GCMD.online_ntf(agent,info.chair,false)
+			end)
+----------------------------------
 			break
 		end
 	end
 end
 
--------------------------------------------
---cmd from agent
-local GCMD = {}
-
-local function ___data_ntf(agent,cmd,con)
-	local data = ___sp:encode(cmd,con)
-	skynet.send(agent,'lua','data_ntf',___sptp,cmd,data)
+function CMD.close()
+	skynet.call('.roommgr','lua','ntf_dismiss',___roomid)
+	skynet.exit()
 end
 
+function CMD.dismiss()
+	skynet.call('.roommgr','lua','ntf_dismiss',___roomid)
+	for i=1,#___players-1 do
+		___ntf(u.agent,'dismiss_ntf')
+	end
+	skynet.timeout(10,function()
+		skynet.exit()
+	end)
+end
+function CMD.agentquit(agent)
+	___ntf(agent,'quit_ntf')
+end
+-------------------------------------------
+--online_ntf
+function GCMD.online_ntf(agent,chair,online)
+	local cmd = 'online_ntf'
+	for i=1,#___players-1 do
+		local _agent = ___players[i].agent
+		if(_agent and _agent~=agent) then
+			___data_ntf(u.agent,cmd,{chair = chair, online = online})				
+		end
+	end
+end
+--joinroom_ntf
+function GCMD.joinroom_ntf(agent,info)
+	local cmd = 'joinroom_ntf'
+	for i=1,#___players-1 do
+		local _agent = ___players[i].agent
+		if(_agent and _agent~=agent) then
+			___data_ntf(u.agent,cmd,{player = info})				
+		end
+	end
+end
+--quit_ntf
+function GCMD.quit_ntf(agent,chair)
+	local cmd = 'quit_ntf'
+	for i=1,#___players-1 do
+		___data_ntf(u.agent,cmd,{chair = chair})
+	end
+end
+--dismiss_ntf
+function GCMD.dismiss_ntf(chair)
+	local cmd = 'dismiss_ntf'
+	for i=1,#___players-1 do
+		___data_ntf(u.agent,cmd,{chair = chair})
+	end
+end
+--dismiss_vote_ntf
+function GCMD.dismiss_vote_ntf(vote)
+	local cmd = 'dismiss_vote_ntf'
+	local time = vote.time_end - vote.time_start
+	for i=1,#___players-1 do
+		___data_ntf(u.agent,cmd,{chair = vote.chair,agree=vote.agree,dismiss=vote.dismiss,time = time})
+	end
+end
+--gameinfo_ntf
+function GCMD.gameinfo_ntf(agent,gameinfo)
+	local cmd = 'gameinfo_ntf'
+	for i=1,#___players-1 do
+		local _agent = ___players[i].agent
+		if(_agent==agent) then
+			___data_ntf(agent,cmd,{game = gameinfo})
+			break				
+		end
+	end
+end
+
+-------------------------------------------
 --ready
 function GCMD.ready_req(agent,data)
 	for i,u in ipairs(___players) do
@@ -250,12 +344,107 @@ function GCMD.ready_req(agent,data)
 	end
 	return 'ready_ntf',{chair=0,ready=true}
 end
+
 --quit req
 function GCMD.quit_req(agent,data)
+	local chair
+	local idx
+	local uid
 	for i,u in ipairs(___players) do
 		if(u.agent==agent) then
-			skynet.error('room GCMD.quit_req',u.info.id)
+			local uuu = u.info.user
+			chair = u.chair
+			idx = i
+			uid = uuu.id
+			skynet.error('room GCMD.quit_req',uuu.id)
 			break
+		end
+	end
+	if(not chair) then
+		return
+	end
+	--未开始
+	if(___gamestate.state==0) then
+		--dismiss
+		if(___owner==uid) then
+			GCMD.dismiss_ntf(chair)
+			CMD.dismiss()
+		else
+			GCMD.quit_ntf(agent,chair)	
+			CMD.agentquit(agent)
+			table.remove(___players,idx)
+		end
+	else
+		___dismiss_vote = ___dismiss_vote or {}
+		local vote = ___dismiss_vote
+		vote.agree = vote.agree or {}
+		vote.dismiss = 0
+		if(not vote.chair) then
+			vote.chair = chair
+		else
+			vote.agree[chair]=1
+		end
+		GCMD.dismiss_vote_ntf(vote)
+	end
+end
+
+--dismiss_vote_req
+function GCMD.dismiss_vote_req(agent,data)
+	local chair
+	for i,u in ipairs(___players) do
+		if(u.agent==agent) then
+			local uuu = u.info.user
+			chair = u.chair
+			skynet.error('room GCMD.dismiss_vote_req',uuu.id)
+			break
+		end
+	end
+	if(not chair) then
+		return
+	end
+	--未开始
+	if(___gamestate.state==0) then
+		return
+	end
+	if(___dismiss_vote and ___dismiss_vote.chair) then
+		local vote = ___dismiss_vote
+		vote.agree = vote.agree or {}
+		vote.dismiss = 0
+		if(data.agree) then
+			vote.agree[chair]=1
+		else	
+			vote.agree[chair]=2
+		end
+		--自己取消
+		if(data.agree==2 and vote.chair == chair) then
+			vote.dismiss = 2
+			GCMD.dismiss_vote_ntf(vote)
+			___dismiss_vote = nil
+			return 
+		end
+		local n = #___players
+		local yes = 0
+		local no = 0
+		for c,ag in pairs(vote.agree) do
+			if(ag==1) then
+				yes = yes + 1
+			elseif(ag==2) then
+				no = no + 1	
+			end
+		end
+		if(yes>=n/2) then
+			vote.dismiss = 1
+		elseif(no>=n/2) then
+			vote.dismiss = 2
+		end
+
+		GCMD.dismiss_vote_ntf(vote)
+		if(vote.dismiss>0) then
+			___dismiss_vote = nil
+			if(vote.dismiss==1) then
+				GCMD.dismiss_ntf(chair)
+				CMD.dismiss()
+			end
 		end
 	end
 end

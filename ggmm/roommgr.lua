@@ -79,7 +79,7 @@ end
 
 
 local NTF_CMD={}
-function NTF_CMD.ntf_roomdismiss(src,roomid)
+function NTF_CMD.ntf_dismiss(src,roomid)
 	rooms[roomid] = nil
 end
 
