@@ -4,6 +4,10 @@
 		"selected_items":
 		[
 			[
+				"__ow",
+				"___owner\t."
+			],
+			[
 				"rando",
 				"math.randomseed(x)"
 			],
@@ -96,64 +100,37 @@
 	"buffers":
 	[
 		{
-			"file": "ggmm/room.lua",
-			"settings":
-			{
-				"buffer_size": 5140,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "ggmm/mj_heshun_dianhu/lib.lua",
-			"settings":
-			{
-				"buffer_size": 10215,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "ggmm/mj_heshun_dianhu/base.lua",
-			"settings":
-			{
-				"buffer_size": 1975,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
 			"file": "ggmm/agent.lua",
 			"settings":
 			{
-				"buffer_size": 5206,
+				"buffer_size": 5491,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "ggmm/main.lua",
+			"file": "ggmm/protos/heshun_dianhu.lua",
 			"settings":
 			{
-				"buffer_size": 885,
+				"buffer_size": 3129,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "ggmm/roommgr.lua",
+			"file": "ggmm/rooms/room_heshun_dianhu.lua",
 			"settings":
 			{
-				"buffer_size": 1573,
+				"buffer_size": 10621,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "ggmm/protodata.lua",
+			"file": "ggmm/protos/common.lua",
 			"settings":
 			{
-				"buffer_size": 4521,
+				"buffer_size": 1575,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -202,34 +179,47 @@
 	[
 		"/Users/jeep/skynet",
 		"/Users/jeep/skynet/ggmm",
-		"/Users/jeep/skynet/ggmm/mj_heshun_dianhu",
-		"/Users/jeep/skynet/ggmm/mj_heshun_suanfen"
+		"/Users/jeep/skynet/ggmm/protos",
+		"/Users/jeep/skynet/ggmm/rooms"
 	],
 	"file_history":
 	[
-		"/Users/jeep/skynet/ggmm/mj_heshun_dianhu/base.lua",
-		"/Users/jeep/skynet/deps/skynet_package/lualib/socket_proxy.lua",
-		"/Users/jeep/skynet/skynet/lualib/skynet.lua",
-		"/Users/jeep/skynet/ggmm/store_sqlite.lua",
-		"/Users/jeep/skynet/ggmm/room.lua",
-		"/Users/jeep/skynet/ggmm/mj_heshun_suanfen/base.lua",
-		"/Users/jeep/skynet/ggmm/protodata.lua",
-		"/Users/jeep/skynet/ggmm/main.lua",
-		"/Users/jeep/skynet/ggmm/mj_heshun_dianhu/lib.lua",
+		"/Users/jeep/skynet/ggmm/protos/heshun_dianhu.lua",
+		"/Users/jeep/skynet/ggmm/protos/common.lua",
+		"/Users/jeep/skynet/ggmm/agent.lua",
 		"/Users/jeep/skynet/ggmm/roommgr.lua",
+		"/Users/jeep/skynet/ggmm/rooms/room_heshun_dianhu.lua",
+		"/Users/jeep/skynet/ggmm/main.lua",
+		"/Users/jeep/skynet/skynet/lualib/skynet.lua",
+		"/Users/jeep/skynet/skynet/lualib/sproto.lua",
+		"/Users/jeep/skynet/ggmm/protoloader.lua",
+		"/Users/jeep/skynet/ggmm/httpagent/main.lua",
+		"/Users/jeep/skynet/ggmm/config",
+		"/Users/jeep/skynet/ggmm/agent_N.lua",
+		"/Users/jeep/skynet/ggmm/rooms/heshun_dianhu.lua",
+		"/Users/jeep/skynet/ggmm/protos/heshun_suanfen.lua",
+		"/Users/jeep/skynet/ggmm/room.lua",
+		"/Users/jeep/skynet/ggmm/protodata.lua",
+		"/Users/jeep/skynet/ggmm/mj_heshun_dianhu/base.lua",
+		"/Users/jeep/skynet/ggmm/mj_heshun_suanfen/base.lua",
+		"/Users/jeep/skynet/ggmm/mj_heshun_dianhu/lib.lua",
+		"/Users/jeep/skynet/ggmm/mj_heshun_suanfen/lib.lua",
+		"/Users/jeep/skynet/ggmm/functions.lua",
+		"/Users/jeep/skynet/skynet/lualib/sprotoloader.lua",
+		"/Users/jeep/skynet/skynet/lualib-src/sproto/lsproto.c",
+		"/Users/jeep/skynet/skynet/lualib-src/sproto/sproto.c",
+		"/Users/jeep/skynet/ggmm/util.lua",
+		"/Users/jeep/skynet/deps/skynet_package/lualib/socket_proxy.lua",
+		"/Users/jeep/skynet/ggmm/store_sqlite.lua",
 		"/Users/jeep/skynet/ggmm/mj_heshun_suanfen/main.lua",
 		"/Users/jeep/skynet/ggmm/mj_heshun_dianhu/main.lua",
-		"/Users/jeep/skynet/ggmm/mj_heshun_suanfen/lib.lua",
 		"/Users/jeep/skynet/skynet/examples/share.lua",
-		"/Users/jeep/skynet/ggmm/agent.lua",
 		"/Users/jeep/skynet/ggmm/auth.lua",
 		"/Users/jeep/skynet/ggmm/watchdog.lua",
 		"/Users/jeep/skynet/ggmm/agentmgr.lua",
 		"/Users/jeep/skynet/ggmm/testdatasheet.lua",
 		"/Users/jeep/skynet/deps/skynet_package/service_package.c",
 		"/Users/jeep/skynet/ggmm/mjlib/gen/B_zi_dn.lua",
-		"/Users/jeep/skynet/ggmm/functions.lua",
-		"/Users/jeep/skynet/ggmm/util.lua",
 		"/Users/jeep/skynet/ggmm/mja_heshun_dianhu/majiang.lua",
 		"/Users/jeep/skynet/ggmm/mja_heshun_dianhu/majiang_lib.lua",
 		"/Users/jeep/skynet/skynet/service/launcher.lua",
@@ -248,7 +238,6 @@
 		"/Users/jeep/skynet/ggmm/mjlib/zzz/zi_all.lua",
 		"/Users/jeep/skynet/mjlib/zzz/zi_all.lua",
 		"/Users/jeep/skynet/mjlib/zzz/zi_9.lua",
-		"/Users/jeep/skynet/ggmm/config",
 		"/Users/jeep/skynet/deps/lsqlite3_fsl09x/examples/tracing.lua",
 		"/Users/jeep/skynet/deps/lsqlite3_fsl09x/examples/simple.lua",
 		"/Users/jeep/skynet/deps/lsqlite3_fsl09x/examples/smart.lua",
@@ -266,7 +255,6 @@
 		"/Users/jeep/skynet/ggmm/mjlib/zzz/zi_8.lua",
 		"/Users/jeep/skynet/ggmm/mjlib/zzz/zi_2.lua",
 		"/Users/jeep/skynet/ggmm/mjlib/zzz/zi_3.lua",
-		"/Users/jeep/skynet/skynet/lualib/sproto.lua",
 		"/Users/jeep/skynet/gm/agent.lua",
 		"/Users/jeep/skynet/skynet/service/debug_console.lua",
 		"/Users/jeep/skynet/skynet/3rd/lua/lvm.c",
@@ -323,26 +311,15 @@
 		"/Users/jeep/skynet/skynet/skynet-src/skynet_socket.c",
 		"/Users/jeep/skynet/skynet/skynet-src/socket_server.c",
 		"/Users/jeep/skynet/skynet/lualib/skynet/socketchannel.lua",
-		"/Users/jeep/skynet/skynet/lualib/compat10/socketchannel.lua",
-		"/Users/jeep/skynet/skynet/skynet-src/socket_server.h",
-		"/Users/jeep/skynet/skynet/service-src/service_snlua.c",
-		"/Users/jeep/skynet/skynet/lualib-src/lua-clientsocket.c",
-		"/Users/jeep/skynet/install-redis.sh",
-		"/Users/jeep/skynet/rinstall.sh",
-		"/Users/jeep/skynet/start.sh",
-		"/Users/jeep/skynet/gm/testredis.lua",
-		"/Users/jeep/skynet/docker/mysql/run.sh",
-		"/Users/jeep/skynet/docker/mysql/runmycli.sh",
-		"/Users/jeep/skynet/docker/redis/Dockerfile",
-		"/Users/jeep/skynet/gm/config.lua"
+		"/Users/jeep/skynet/skynet/lualib/compat10/socketchannel.lua"
 	],
 	"find":
 	{
-		"height": 39.0
+		"height": 23.0
 	},
 	"find_in_files":
 	{
-		"height": 93.0,
+		"height": 101.0,
 		"where_history":
 		[
 			"",
@@ -371,6 +348,105 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"gameinfo_ntf",
+			"dismiss",
+			"quit_ntf",
+			"___ntf",
+			"quit_ntf",
+			"dismiss",
+			"dismiss_ntf",
+			"dismiss",
+			"dismiss_ntf",
+			"COMMAND.quit",
+			"COMMAND.closed",
+			"COMMAND.close",
+			"dismiss",
+			"dismiss_ntf",
+			"___ntf",
+			"gameinfo_ntf",
+			"ntf_roomdismiss",
+			"CMD.dismiss",
+			"dismiss",
+			"quit_ntf",
+			"dismiss_ntf",
+			"dismiss",
+			"dismiss_ntf",
+			"dismiss_vote_ntf",
+			"___dismiss_vote",
+			"dismiss_vote_ntf",
+			"agree",
+			"___dismiss_vote",
+			"dismiss_ntf",
+			"quit_ntf",
+			"___ntf",
+			"dismiss_ntf",
+			"dismiss",
+			"__roomaddr",
+			"dismiss",
+			"\n\t",
+			"closed",
+			"dismiss",
+			"quit_ntf",
+			"dismiss_ntf",
+			"online_ntf",
+			"___players",
+			"ply",
+			"info",
+			"gamestart_ntf",
+			"NTF_CMD",
+			"data_ntf",
+			"___data_ntf",
+			"querytype",
+			"__init",
+			"RoomArgs",
+			"Room",
+			"RoomArgs",
+			"___args",
+			"___roominfo",
+			"___gameinfo",
+			"___sptp",
+			"___args",
+			"__fapai",
+			"mjcmd",
+			"mjlib",
+			"mjcmd",
+			"RoomBase",
+			"datantf",
+			"___sptp",
+			"___tp",
+			"__sp",
+			"___sp",
+			"mjlib",
+			"send_request",
+			"host",
+			"decode_msg",
+			"Ting",
+			"ntf_online",
+			"MAX_GLOBALSPROTO",
+			"lsaveproto",
+			"other",
+			"__array",
+			"sp",
+			"__fapai",
+			"___args",
+			"RoomArgs",
+			"newfoom",
+			"readys",
+			"cardidx",
+			"cards",
+			"readys",
+			"args",
+			"owner",
+			"roomid",
+			"newroom",
+			"players",
+			"gameinfo",
+			"gamestate",
+			"roominfo",
+			"__roomaddr",
+			"__userinfo",
+			"__roomid",
+			"__roomaddr",
 			"GameInfo",
 			"proxy",
 			"__addr",
@@ -399,106 +475,7 @@
 			"joinroom",
 			"service_exit",
 			"checkHuType_YJ",
-			"huDNFXBZ__",
-			"tingDNFXBZ__",
-			"huDNFXBZ",
-			"CMD.huDNFXBZ__",
-			"CMD.huDNFXBZ",
-			"huDNFXBZ",
-			"MAX_TP",
-			"huA",
-			"CMD.huA__(tcp)",
-			"__fmod",
-			"CURRENT_MODULE_NAME",
-			"__t6",
-			"ting",
-			"tabletofile",
-			"2222222",
-			"filter",
-			"clone",
-			"tongji",
-			"\"}\n",
-			"clone",
-			"filter",
-			"ck4",
-			"store_sqlite",
-			"majiang",
-			"1236666",
-			"1222234",
-			"decode_package",
-			"host",
-			"docmd",
-			"COMMAND",
-			"call",
-			"9999",
-			"1111444",
-			"ipairs",
-			"t2",
-			"t1",
-			"11114446",
-			"11112444",
-			"1111444",
-			"1111234444",
-			"1111238888",
-			"2222348888",
-			"2222347777",
-			"22223447777",
-			"2222347777",
-			"2347777",
-			"7777",
-			"37777",
-			"7777",
-			"34457777",
-			"13457777",
-			"f12",
-			"1111",
-			"5555",
-			"1111",
-			"234555667778888",
-			"__t2",
-			"1,2",
-			"f10",
-			"__t9",
-			"f9",
-			"8888",
-			"ck",
-			"__t4",
-			"f7",
-			"command_handler",
-			"login_handler",
-			"lhmac64",
-			"ltohex",
-			"dhsecret",
-			"ldhexchange",
-			"lhmac64",
-			"lxor_str",
-			"LUA_CLIB_SKYNET",
-			"luaopen_skynet_crypt",
-			"luaopen_client_crypt",
-			"register",
-			"skynet_context_new",
-			"strsep",
-			"cmd_launch",
-			"skynet_handle_findname",
-			"skynet_handle_namehandle",
-			"cmd_reg",
-			"skynet_command",
-			"lcommand",
-			"dispatch_message",
-			"unknown_response",
-			"tostring",
-			"register_protocol",
-			"skynet.retpack",
-			"luaseri_pack",
-			"pack",
-			"skynet.pack",
-			"skynet.retpack",
-			"skynet.register",
-			"LAUNCHOK",
-			"console_main_loop",
-			"cd",
-			"PLAT",
-			"read_response"
+			"huDNFXBZ__"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -506,6 +483,7 @@
 		"regex": false,
 		"replace_history":
 		[
+			"ntf_dismiss",
 			"ALayer",
 			"kCCUniformSampler3_s",
 			"kCCUniformSampler2_s",
@@ -520,24 +498,24 @@
 	"groups":
 	[
 		{
-			"selected": 6,
+			"selected": 2,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "ggmm/room.lua",
+					"file": "ggmm/agent.lua",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 5140,
+						"buffer_size": 5491,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4273,
-								4286
+								1391,
+								1391
 							]
 						],
 						"settings":
@@ -546,7 +524,7 @@
 							"translate_tabs_to_spaces": false
 						},
 						"translation.x": 0.0,
-						"translation.y": 2738.0,
+						"translation.y": 894.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 2,
@@ -554,164 +532,19 @@
 				},
 				{
 					"buffer": 1,
-					"file": "ggmm/mj_heshun_dianhu/lib.lua",
+					"file": "ggmm/protos/heshun_dianhu.lua",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 10215,
+						"buffer_size": 3129,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								127,
-								53
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Lua/Lua.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "ggmm/mj_heshun_dianhu/base.lua",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1975,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1962,
-								1962
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Lua/Lua.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 1140.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "ggmm/agent.lua",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 5206,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								3973,
-								3973
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Lua/Lua.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 2197.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "ggmm/main.lua",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 885,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								878,
-								878
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Lua/Lua.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 6,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "ggmm/roommgr.lua",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1573,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								315,
-								320
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Lua/Lua.sublime-syntax",
-							"translate_tabs_to_spaces": false
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 5,
-					"type": "text"
-				},
-				{
-					"buffer": 6,
-					"file": "ggmm/protodata.lua",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 4521,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1062,
-								1062
+								2798,
+								2798
 							]
 						],
 						"settings":
@@ -721,10 +554,69 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 524.0,
+						"translation.y": 2688.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "ggmm/rooms/room_heshun_dianhu.lua",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 10621,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								6705,
+								6705
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Lua/Lua.sublime-syntax",
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 4325.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "ggmm/protos/common.lua",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1575,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Lua/Lua.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 279.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
 					"type": "text"
 				}
 			]
@@ -783,16 +675,44 @@
 		"selected_items":
 		[
 			[
+				"main",
+				"ggmm/main.lua"
+			],
+			[
+				"skynet",
+				"skynet/lualib/skynet.lua"
+			],
+			[
+				"sproto.lua",
+				"skynet/lualib/sproto.lua"
+			],
+			[
+				"sprot",
+				"skynet/lualib/sproto.lua"
+			],
+			[
+				"lsproto",
+				"skynet/lualib-src/sproto/lsproto.c"
+			],
+			[
+				"sproto",
+				"skynet/lualib-src/sproto/sproto.c"
+			],
+			[
+				"sprotoloader",
+				"skynet/lualib/sprotoloader.lua"
+			],
+			[
+				"socket_proxy",
+				"deps/skynet_package/lualib/socket_proxy.lua"
+			],
+			[
 				"socket_proxy.lua",
 				"deps/skynet_package/lualib/socket_proxy.lua"
 			],
 			[
 				"skynet.l",
 				"skynet/lualib/skynet.lua"
-			],
-			[
-				"socket_proxy",
-				"deps/skynet_package/lualib/socket_proxy.lua"
 			],
 			[
 				"agent",
@@ -808,10 +728,6 @@
 			],
 			[
 				"sk",
-				"skynet/lualib/skynet.lua"
-			],
-			[
-				"skynet",
 				"skynet/lualib/skynet.lua"
 			],
 			[
@@ -841,10 +757,6 @@
 			[
 				"proxy",
 				"deps/skynet_package/lualib/socket_proxy.lua"
-			],
-			[
-				"sproto",
-				"skynet/lualib/sproto.lua"
 			],
 			[
 				"debugcon",
@@ -961,10 +873,6 @@
 			[
 				"gm/",
 				"gm/agent.lua"
-			],
-			[
-				"main",
-				"gm/main.lua"
 			],
 			[
 				"luak",
@@ -1123,10 +1031,6 @@
 				"service/console.lua"
 			],
 			[
-				"sprotoloader",
-				"lualib/sprotoloader.lua"
-			],
-			[
 				"harbor",
 				"lualib/skynet/harbor.lua"
 			],
@@ -1281,18 +1185,6 @@
 			[
 				"ccluajavabridge",
 				"lib/cocos2d-x/scripting/lua/cocos2dx_support/platform/android/CCLuaJavaBridge.cpp"
-			],
-			[
-				"share",
-				"project/pdk/scripts/app/scenes/ShareLayer.lua"
-			],
-			[
-				"app.lua",
-				"project/pdk/scripts/app/app.lua"
-			],
-			[
-				"jnihelper",
-				"lib/cocos2d-x/cocos2dx/platform/android/jni/JniHelper.cpp"
 			]
 		],
 		"width": 0.0
@@ -1331,7 +1223,7 @@
 	"show_open_files": false,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 272.0,
+	"side_bar_width": 310.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{

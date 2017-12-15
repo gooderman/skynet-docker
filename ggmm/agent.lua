@@ -43,12 +43,10 @@ function COMMAND.closed(msg)
 		return
 	end
 	skynet.error(msg)
-	skynet.send(agentMgr,'lua','agent-closed',fd)
+	skynet.send(agentMgr,'lua','agent-closed',__fd)
 	proxy.close(__fd)
-	local rr  = COMMAND.getroom()
-	if(rr.state==0) then
-		local roomaddr = rr.room.addr
-		skynet.send(roomaddr,'lua','agent_closed',skynet.self(),__userinfo.id)
+	if(__roomaddr and __roomaddr>0) then
+		skynet.send(__roomaddr,'lua','agent_closed',skynet.self(),__userinfo.id)
 	end
 	skynet.exit()
 end
@@ -67,11 +65,11 @@ function COMMAND.heartbeat(data)
 	return t
 end
 function COMMAND.login(data)
-	util.dump(data,'cmd.login')
 	local userdb = skynet.call(store_sqlite,'lua','get_user',data.user)
 	if(not userdb) then
 		userdb = skynet.call(store_sqlite,'lua','new_user',data.user)
 	end
+	-- util.dump(data,'cmd.login')
 	if(userdb) then
 		if(__userinfo and __userinfo.id~=userdb.id) then
 			skynet.fork(function()
@@ -167,9 +165,9 @@ end
 
 local function loop()
 	while true do
-		-- skynet.error('agent loop',fd,addr,ip)
-		-- local ok, msg = pcall(read,fd)
-		local ok, msg = true,read(__fd)
+		-- skynet.error('agent loop',__fd,__addr,__ip)
+		local ok, msg = pcall(read,__fd)
+		-- local ok, msg = true,read(__fd)
 		if ok then
 			pcall(decode_request,msg)
 		else	

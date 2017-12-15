@@ -171,6 +171,8 @@ function CMD.join(agent,user)
 		if(uuu.id==user.id) then
 			info.online = true
 			u.agent=agent
+
+			-- util.dump(___players,'CMD.join',6)
 ------------------------------------------------------
 --通知
 			skynet.fork(function()
@@ -199,8 +201,7 @@ function CMD.join(agent,user)
 		info.ting = false
 		info.hu = false
 		
-		table.insert(___players,{info=info,agent=agent})
-		util.dump(info,"CMD.join user")		
+		table.insert(___players,{info=info,agent=agent})	
 ------------------------------------------------------
 --通知
 		skynet.fork(function()
@@ -239,6 +240,7 @@ function CMD.agent_closed(agent,userid)
 			break
 		end
 	end
+	-- util.dump(___players,'CMD.agent_closed',6)
 end
 
 function CMD.close()
@@ -265,7 +267,7 @@ function GCMD.online_ntf(agent,chair,online)
 	for i=1,#___players do
 		local _agent = ___players[i].agent
 		if(_agent and _agent~=agent) then
-			___data_ntf(u.agent,cmd,{chair = chair, online = online})				
+			___data_ntf(_agent,cmd,{chair = chair, online = online})				
 		end
 	end
 end
@@ -275,7 +277,7 @@ function GCMD.joinroom_ntf(agent,info)
 	for i=1,#___players do
 		local _agent = ___players[i].agent
 		if(_agent and _agent~=agent) then
-			___data_ntf(u.agent,cmd,{player = info})				
+			___data_ntf(_agent,cmd,{player = info})				
 		end
 	end
 end
@@ -283,14 +285,16 @@ end
 function GCMD.quit_ntf(agent,chair)
 	local cmd = 'quit_ntf'
 	for i=1,#___players do
-		___data_ntf(u.agent,cmd,{chair = chair})
+		local _agent = ___players[i].agent
+		___data_ntf(_agent,cmd,{chair = chair})
 	end
 end
 --dismiss_ntf
 function GCMD.dismiss_ntf(chair)
 	local cmd = 'dismiss_ntf'
 	for i=1,#___players do
-		___data_ntf(u.agent,cmd,{chair = chair})
+		local _agent = ___players[i].agent
+		___data_ntf(_agent,cmd,{chair = chair})
 	end
 end
 --dismiss_vote_ntf
@@ -298,7 +302,8 @@ function GCMD.dismiss_vote_ntf(vote)
 	local cmd = 'dismiss_vote_ntf'
 	local time = vote.time_end - vote.time_start
 	for i=1,#___players do
-		___data_ntf(u.agent,cmd,{chair = vote.chair,agree=vote.agree,dismiss=vote.dismiss,time = time})
+		local _agent = ___players[i].agent
+		___data_ntf(_agent,cmd,{chair = vote.chair,agree=vote.agree,dismiss=vote.dismiss,time = time})
 	end
 end
 --gameinfo_ntf

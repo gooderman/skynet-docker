@@ -39,8 +39,8 @@ function CMD.newroom(agent,user,data)
 		agent=agent
 	}
 	local addr = skynet.newservice(name,'abc')
-	skynet.call(addr,'lua','init',roominfo)
 	roominfo.addr = addr
+	skynet.call(addr,'lua','init',roominfo)
 	rooms[roomid] = roominfo
 	return 0,roominfo,addr
 end
@@ -62,7 +62,13 @@ function CMD.joinroom(agent,user,roomid)
 	return -10
 end	
 function CMD.getroom(agent,user)
-	local roomid = rooms[user.id]
+	local roomid
+	for _,room in pairs(rooms) do
+		if(room.owner == user.id) then
+			roomid = room.id
+			break
+		end
+	end
 	if(not roomid) then
 		return -1
 	end
