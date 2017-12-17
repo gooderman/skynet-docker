@@ -38,7 +38,7 @@ local ___players = {} --{info=Player,agent=agent}
 --      ting 4 : boolean
 --      hu 5 : boolean
 -- }
-local ___dismiss_vote={}
+local ___dismiss_vote=nil
 -- {
 -- 	time #remaintime
 -- 	chair #sender
@@ -184,8 +184,12 @@ function CMD.join(agent,user)
 					players[#players+1] = ___players[i].info
 				end
 				___gameinfo.player = players
-
 				GCMD.gameinfo_ntf(agent,___gameinfo)
+				------------------------------------------
+				if(___dismiss_vote) then
+					GCMD.dismiss_vote_ntf(___dismiss_vote)
+				end
+				------------------------------------------
 			end)			
 ------------------------------------------------------				
 			return 0,___roominfo,___self
@@ -215,6 +219,11 @@ function CMD.join(agent,user)
 			___gameinfo.player = players
 
 			GCMD.gameinfo_ntf(agent,___gameinfo)
+			------------------------------------------
+			if(___dismiss_vote) then
+				GCMD.dismiss_vote_ntf(___dismiss_vote)
+			end
+			------------------------------------------
 		end)
 ------------------------------------------------------	
 		return 0,___roominfo,___self
@@ -251,13 +260,15 @@ end
 function CMD.dismiss()
 	skynet.call('.roommgr','lua','ntf_dismiss',___roomid)
 	for i=1,#___players do
-		___ntf(u.agent,'dismiss_ntf')
+		local _agent = ___players[i].agent
+		___ntf(_agent,'dismiss_ntf')
 	end
 	skynet.timeout(10,function()
 		skynet.exit()
 	end)
 end
-function CMD.agentquit(agent)
+function CMD.agentquit(agent,uid)
+	skynet.call('.roommgr','lua','ntf_quit',uid)
 	___ntf(agent,'quit_ntf')
 end
 -------------------------------------------
@@ -278,6 +289,16 @@ function GCMD.joinroom_ntf(agent,info)
 		local _agent = ___players[i].agent
 		if(_agent and _agent~=agent) then
 			___data_ntf(_agent,cmd,{player = info})				
+		end
+	end
+end
+--ready_ntf
+function GCMD.ready_ntf(agent,id)
+	local cmd = 'ready_ntf'
+	for i=1,#___players do
+		local _agent = ___players[i].agent
+		if(_agent) then
+			___data_ntf(_agent,cmd,{chair = id})				
 		end
 	end
 end
@@ -321,12 +342,17 @@ end
 -------------------------------------------
 --ready
 function GCMD.ready_req(agent,data)
+	local chair
 	for i,u in ipairs(___players) do
 		if(u.agent==agent) then
 			skynet.error('room GCMD.ready_req',u.info.id)
 			u.info.ready = true
+			chair = u.info.chair
 			break
 		end
+	end
+	if(not chair) then
+		return
 	end
 	local n = ___args.renshu
 	local m = 0
@@ -335,6 +361,8 @@ function GCMD.ready_req(agent,data)
 			m = m + 1
 		end
 	end
+	skynet.error('room GCMD.ready to ntf')
+	GCMD.ready_ntf(agent,chair)
 	if(n==m) then
 		skynet.error('room GCMD.ready to start')
 		___fapai()
@@ -345,9 +373,8 @@ function GCMD.ready_req(agent,data)
 		for i,u in ipairs(___players) do
 			___data_ntf(u.agent,cmd,con)
 		end
-	--------------------------------------------------	
 	end
-	return 'ready_ntf',{chair=0,ready=true}
+	-- return 'ready_ntf',{chair=0,ready=true}
 end
 
 --quit req
@@ -358,7 +385,7 @@ function GCMD.quit_req(agent,data)
 	for i,u in ipairs(___players) do
 		if(u.agent==agent) then
 			local uuu = u.info.user
-			chair = u.chair
+			chair = u.info.chair
 			idx = i
 			uid = uuu.id
 			skynet.error('room GCMD.quit_req',uuu.id)
@@ -372,24 +399,47 @@ function GCMD.quit_req(agent,data)
 	if(___gamestate.state==0) then
 		--dismiss
 		if(___owner==uid) then
+			skynet.error('room GCMD.quit_req to dismiss_ntf')
 			GCMD.dismiss_ntf(chair)
 			CMD.dismiss()
 		else
+			skynet.error('room GCMD.quit_req to quit_ntf')
 			GCMD.quit_ntf(agent,chair)	
-			CMD.agentquit(agent)
+			CMD.agentquit(agent,uid)
 			table.remove(___players,idx)
 		end
 	else
+		if(___dismiss_vote) then
+			GCMD.dismiss_vote_ntf(___dismiss_vote)
+			return
+		end
+		local isbegan = not ___dismiss_vote
 		___dismiss_vote = ___dismiss_vote or {}
 		local vote = ___dismiss_vote
 		vote.agree = vote.agree or {}
 		vote.dismiss = 0
+		vote.time_start = vote.time_start or os.time()
+		vote.time_end = vote.time_end or os.time() + 30000
+		vote.time = vote.time_end - vote.time_start
 		if(not vote.chair) then
 			vote.chair = chair
-		else
-			vote.agree[chair]=1
 		end
+		vote.agree[chair]=1
+		skynet.error('room GCMD.quit_req to dismiss_vote_ntf',vote.time)
 		GCMD.dismiss_vote_ntf(vote)
+		if(isbegan) then
+			local time = vote.time_start
+			local tt = vote.time/10
+			skynet.timeout(tt,function()
+				if(___dismiss_vote and ___dismiss_vote.time_start==time) then
+					skynet.error('room GCMD.quit_req timeout to dismiss_ntf')
+					GCMD.dismiss_ntf(chair)
+					CMD.dismiss()
+				else
+
+				end
+			end)
+		end
 	end
 end
 
@@ -399,8 +449,8 @@ function GCMD.dismiss_vote_req(agent,data)
 	for i,u in ipairs(___players) do
 		if(u.agent==agent) then
 			local uuu = u.info.user
-			chair = u.chair
-			skynet.error('room GCMD.dismiss_vote_req',uuu.id)
+			chair = u.info.chair
+			skynet.error('room GCMD.dismiss_vote_req',uuu.id,chair,___gamestate.state)
 			break
 		end
 	end
@@ -415,13 +465,14 @@ function GCMD.dismiss_vote_req(agent,data)
 		local vote = ___dismiss_vote
 		vote.agree = vote.agree or {}
 		vote.dismiss = 0
-		if(data.agree) then
+		if(data.agree==1) then
 			vote.agree[chair]=1
 		else	
 			vote.agree[chair]=2
 		end
 		--自己取消
 		if(data.agree==2 and vote.chair == chair) then
+			skynet.error('room GCMD.dismiss_vote_req cancel by self')
 			vote.dismiss = 2
 			GCMD.dismiss_vote_ntf(vote)
 			___dismiss_vote = nil
@@ -437,9 +488,9 @@ function GCMD.dismiss_vote_req(agent,data)
 				no = no + 1	
 			end
 		end
-		if(yes>=n/2) then
+		if(yes>n/2) then
 			vote.dismiss = 1
-		elseif(no>=n/2) then
+		elseif(no>n/2) then
 			vote.dismiss = 2
 		end
 
@@ -447,8 +498,11 @@ function GCMD.dismiss_vote_req(agent,data)
 		if(vote.dismiss>0) then
 			___dismiss_vote = nil
 			if(vote.dismiss==1) then
+				skynet.error('room GCMD.dismiss_vote_req to agree')
 				GCMD.dismiss_ntf(chair)
 				CMD.dismiss()
+			else
+				skynet.error('room GCMD.dismiss_vote_req to reject')	
 			end
 		end
 	end
@@ -474,8 +528,10 @@ function GCMD.dataup(agent,data)
 	local func = GCMD[cmd]
 	if(func) then
 		local rcmd,result = func(agent,tb)
-		local rdata = ___sp:encode(rcmd, result)
-		return tp,rcmd,rdata
+		if(rcmd) then
+			local rdata = ___sp:encode(rcmd, result)
+			return tp,rcmd,rdata
+		end
 	end
 end
 

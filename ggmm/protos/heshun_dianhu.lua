@@ -213,7 +213,7 @@ local str =
 }
 
 .dismiss_vote_req {
-    agree 0 :boolean
+    agree 0 :integer
 }
 
 .dismiss_ntf {

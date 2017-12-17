@@ -11,10 +11,15 @@ local rooms={}
 --[[
 id = roomid,
 owner = user.id,
+type = data.type
 args = args,
 user=user,
 agent=agent,
 addr=addr
+]]--
+local userroom={}
+--[[
+[userid]=roomid,
 ]]--
 
 local CMD = {}
@@ -42,6 +47,9 @@ function CMD.newroom(agent,user,data)
 	roominfo.addr = addr
 	skynet.call(addr,'lua','init',roominfo)
 	rooms[roomid] = roominfo
+
+	userroom[user.id] = roomid
+	
 	return 0,roominfo,addr
 end
 
@@ -57,21 +65,29 @@ function CMD.joinroom(agent,user,roomid)
 		return -1
 	else
 		local st,info,addr = skynet.call(room.addr,'lua','join',agent,user)
+		------------------------
+		if(st==0) then
+			userroom[user.id] = roomid
+		end
+		------------------------
 		return st,info,addr
 	end
 	return -10
 end	
 function CMD.getroom(agent,user)
 	local roomid
-	for _,room in pairs(rooms) do
-		if(room.owner == user.id) then
-			roomid = room.id
-			break
-		end
-	end
-	if(not roomid) then
-		return -1
-	end
+	-- for _,room in pairs(rooms) do
+	-- 	if(room.owner == user.id) then
+	-- 		roomid = room.id
+	-- 		break
+	-- 	end
+	-- end
+	-- if(not roomid) then
+	-- 	return -1
+	-- end
+	---------------------------
+	roomid = userroom[user.id]
+	---------------------------
 	local room = rooms[roomid]
 	if not room  then
 		return -1
@@ -85,8 +101,16 @@ end
 
 
 local NTF_CMD={}
-function NTF_CMD.ntf_dismiss(src,roomid)
+function NTF_CMD.ntf_dismiss(roomid)
 	rooms[roomid] = nil
+	for uid,id in pairs(userroom) do
+		if(id==roomid) then
+			userroom[uid] = nil
+		end
+	end
+end
+function NTF_CMD.ntf_quit(uid)
+	userroom[uid] = nil
 end
 
 skynet.start(function()
@@ -97,7 +121,7 @@ skynet.start(function()
 				return skynet.retpack(ff(source,...))
 			end
 		elseif(NTF_CMD[cmd]) then
-			skynet.retpack(NTF_CMD[cmd]())			
+			skynet.retpack(NTF_CMD[cmd](...))			
 		end
 	end)
 	skynet.register(".roommgr")
