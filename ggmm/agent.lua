@@ -27,6 +27,7 @@ local function dump(t, prefix)
 		end
 	end
 end
+local ___agentmgr
 local __heartupid = 1000
 local __addr
 local __fd
@@ -35,15 +36,18 @@ local __roomid
 local __roomaddr 
 local __userinfo
 local __selfaddr
+local __testco
 ---------------------------------------------------------------
 local COMMAND = {}
 local __closing
+local __closwill
 function COMMAND.closed(msg)
 	if(__closing) then
 		return
 	end
+	__closing = true
 	skynet.error(msg)
-	skynet.send(agentMgr,'lua','agent-closed',__fd)
+	skynet.send(___agentmgr,'lua','agent-closed',__fd)
 	proxy.close(__fd)
 	if(__roomaddr and __roomaddr>0) then
 		skynet.send(__roomaddr,'lua','agent_closed',skynet.self(),__userinfo.id)
@@ -52,11 +56,22 @@ function COMMAND.closed(msg)
 end
 
 function COMMAND.close(msg)
-	__closing = true
-	skynet.error(msg)
-	skynet.send(agentMgr,'lua','agent-closed',fd)
-	proxy.close(__fd)
-	skynet.exit()
+	skynet.error('COMMAND.close')
+	COMMAND.closed(msg)
+end
+--reg to agentmgr: one uid multidevice login will be replaceed
+function COMMAND.reg(uid)
+	local r = skynet.call(___agentmgr,'lua','reg',__fd,uid)
+	if(r) then
+		util.dump(r,'COMMAND.reg')
+	end
+end
+--抢登陆
+function COMMAND.replaced(uid)
+	__closwill = true
+	local reqdata = send_request("replaced",{},1,"")
+	write(__fd,reqdata,string.len(reqdata))
+	COMMAND.close('agent be replaced',uid)
 end
 
 function COMMAND.heartbeat(data)
@@ -78,6 +93,7 @@ function COMMAND.login(data)
 			return {state=2}
 		else
 			__userinfo = userdb
+			COMMAND.reg(__userinfo.id)
 			return {state=0,user=userdb}
 		end
 	else
@@ -168,11 +184,17 @@ local function loop()
 		-- skynet.error('agent loop',__fd,__addr,__ip)
 		local ok, msg = pcall(read,__fd)
 		-- local ok, msg = true,read(__fd)
+		if(__testco) then
+			skynet.wakeup(__testco)
+		end
 		if ok then
 			pcall(decode_request,msg)
 		else	
 			COMMAND.closed("agent fail read")
 			return
+		end
+		if(__closwill or __closing) then
+			break
 		end
 	end
 end
@@ -215,12 +237,23 @@ skynet.start(function()
 		end
 	end
 
+	-- __testco = skynet.fork(function(v1,v2)
+	-- 	skynet.error("agent testco start",v1,v2)
+	-- 	local idx = 1
+	-- 	while(true) do
+	-- 		skynet.error("agent testco idx",idx)
+	-- 		skynet.wait()
+	-- 		idx = idx + 1
+	-- 	end
+	-- 	skynet.error("agent testco end")
+	-- end,100,200)
+
 	
 	store_sqlite = skynet.uniqueservice("store_sqlite")
 
 	skynet.dispatch('lua',function(session, source, cmd,...)
 		if(cmd=='init') then
-			agentMgr = source
+			___agentmgr = source
 			__fd,__addr,__ip = ...
 			print('agent init',__fd,__addr,__ip)
 			proxy.subscribe(__fd)
@@ -228,8 +261,11 @@ skynet.start(function()
 			-- skynet.fork(test)
 			-- error("fuckfuck")
 			skynet.retpack({fd=__fd,addr=__addr,ip=__ip})
+		elseif(cmd=='replaced') then
+			COMMAND.replaced(uid)
 		elseif(NTF_CMD[cmd]) then
 			skynet.retpack(NTF_CMD[cmd](...))
 		end
 	end)
 end)
+

@@ -59,6 +59,74 @@ local function tongji(tb)
 	return r,rc
 end
 
+local function tongji2(tb)
+	local r = {}
+	for _,id in ipairs(tb) do
+		local ct = r[id] or 0
+		r[id] = ct+1
+	end
+	return r
+end
+--0,1,2-3-4,5,6-7-8,9,10 出 左吃-中吃-右吃 碰 明杠-续杠-暗杠 听 胡
+local function check_cpg(tb,pai)
+	local rr = {}
+	local r = tongji2(tb)
+	if r[pai] then
+		if(r[pai]==3) then
+			rr[#rr+1] = 6
+			rr[#rr+1] = 5
+		elseif(r[pai]==2) then
+			rr[#rr+1] = 5
+		end
+	end
+	if(pai>27) then
+		
+	else
+		--left chi
+		local tp,idx = parse(pai)
+		if(idx>=1 and idx<=7) then
+			local a = r[pai+1]
+			local b = r[pai+2]
+			if(a and b) then
+				rr[#rr+1] = 2
+			end
+		end	
+		--mid chi
+		if(idx>=2 and idx<=8) then	
+			local a = r[pai-1]
+			local b = r[pai+1]
+			if(a and b) then
+				rr[#rr+1] = 3
+			end
+		end
+		--right chi
+		if(idx>=3 and idx<=9) then
+			local a = r[pai-2]
+			local b = r[pai-1]
+			if(a and b) then
+				rr[#rr+1] = 4
+			end
+		end
+
+	end
+	if(#rr>0) then
+		return rr
+	end
+end
+--1,2-3-4,5,6-7-8,9,10 出 左吃-中吃-右吃 碰 明杠-续杠-暗杠 听 胡
+local function check_gang(tb)
+	local rr = {}
+	local r = tongji2(tb)
+	for id,ct in pairs(r) do
+		if(ct==4) then
+			rr[#rr+1] = id
+		end
+	end
+	if(#rr>0) then
+		return rr
+	end
+end
+
 local function sub(t,id)
 	for i,v in ipairs(t) do
 		if(id==v) then
@@ -109,6 +177,8 @@ mj.combine = combine
 --统计分类
 mj.tongji = tongji
 mj.gencards = gencards
+mj.check_cpg = check_cpg
+mj.check_gang = check_gang
 --插入
 mj.sub = sub
 mj.add = add

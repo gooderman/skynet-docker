@@ -23,20 +23,19 @@ local str =
      ting 4 : boolean
      hu 5 : boolean
 }
-
+.OptCard {
+    opt 0 : integer
+    card 1 : integer 
+    from 2 : integer
+}
 .Cards {
      chair 0 : integer
      out 1 : *integer #drop
      hand 2 : *integer #have
-     chi1 3 : *integer #zuo chi
-     chi2 4 : *integer #zhong chi
-     chi3 5 : *integer #you chi
-     peng 6 : *integer 
-     gang1 7 : *integer #ming gang
-     gang2 8 : *integer #xu gang
-     gang3 9 : *integer #an gang
-     hu 10 : integer #hu
-     zimo 11 : integer #zimo
+     opt 3 : *OptCard 
+     ting 4 : boolean
+     hu 5 : integer #hu
+     zimo 6 : integer #zimo
 }
 
 .Score {
@@ -48,13 +47,14 @@ local str =
 }
 
 .GameState {
-    state 0 : integer
+    state 0 : integer #012
     jushu 1 : integer
     banker 2 : integer #庄家
     cards 3 : *Cards #玩家的牌
     cardnumb 4 : integer #剩余未翻的牌
-    winner 5 : *integer
-    score 6 : *Score
+    optchair 5 : integer #操作玩家
+    #winner 5 : *integer
+    #score 6 : *Score
 }
 
 .GameInfo {
@@ -96,13 +96,14 @@ local str =
 }
 
 .chi_tip {
-    from 0 : integer 
-    to 1 : integer
-    cards 2 : integer
+    from 0 : integer
+    card 1 : integer
+    type 2 : integer
 }
 
 .chi_req {
-    cards 0 : *integer
+    type  0 : integer ###
+    cards 1 : *integer
 }
 
 .chi_ntf {
@@ -116,7 +117,7 @@ local str =
 .peng_tip {
     from 0 : integer 
     to 1 : integer
-    cards 2 : integer
+    card 2 : integer
 }
 
 .peng_req {
@@ -125,32 +126,33 @@ local str =
 
 .peng_ntf {
     state 0 : integer
-    from 1 : integer 
-    to 2 : integer    
-    cards 3 : *integer
+    chair 1 : integer    
+    from 2 : integer 
+    card 3 : integer
 }
 
 .gang_tip {
     type 0 : integer #ming xu an
     from 1 : integer
-    cards 2 : integer
+    card 2 : integer
 }
 
 .gang_req {
-    cards 0: *integer
+    type 0 :integer #ming xu an
+    card 1 : integer
 }
 
 .gang_ntf {
     state 0 : integer
-    type 1 : integer #ming xu an
-    from 2 : integer 
-    to 3 : integer    
-    cards 4 : *integer
+    chair 1 : integer
+    type 2 : integer #ming xu an
+    from 3 : integer  
+    card 4 : integer
 }
 
 .chu_tip {
-    chair 0 : integer   
-    ting 1 : *Ting
+    chair 0 : integer
+    cards 1 : *integer #suggest
 }
 
 .chu_req {
@@ -168,11 +170,13 @@ local str =
 }
 
 .ting_req {
-    card 0 : integer
+    isting 0 :boolean
+    card 1 : integer
 }
 
 .ting_ntf {
     chair 0: integer
+    card 1 : integer
 }
 
 .hu_tip {
@@ -182,19 +186,46 @@ local str =
 }
 
 .hu_req {
-    hu 0: integer
+    ishu 0: boolean
 }
 
 .hu_ntf {
     chair 0 :integer
     from 1 : integer
     card 2 : integer
-    zimo 3 : integer
+    zimo 3 : boolean
+}
+.huang_ntf {
+}
+
+.pass_req {
+}
+
+#接牌吃碰杠
+.opt_tip {
+    chair 0 :integer
+    from 1 : integer
+    card 2 : integer
+    types 3 : *integer
+}
+
+
+#起牌后选项
+.opt_tip_self {
+    chair 0 :integer
+    hu 1 : boolean
+    gangxu 2: *integer
+    gangan 3: *integer
 }
 
 .getcard_ntf {
     chair 0 :integer
     card 1 : integer
+}
+
+.invalid_ntf {
+    chair 0 :integer
+    type 1 : integer
 }
 
 .quit_req {

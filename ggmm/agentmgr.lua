@@ -1,31 +1,46 @@
 -- local skynet = require "skynet"
 local skynet = require "manager"
 local util = require "util"
-local agents={}
-local store
+local ___agents={}
+local ___uids = {}
 skynet.start(function()
-	skynet.dispatch('lua',function(session, source, cmd,fd,addr,ip)
+	skynet.dispatch('lua',function(session, source, cmd,...)
 		if(cmd=='add') then
+			local fd,addr,ip = ...
 			skynet.error("add agent",fd,addr,ip)
 			local agent = skynet.newservice('agent')
 			local msg = skynet.call(agent,'lua','init',fd,addr,ip)
 			util.dump(msg,"add agent init",3)
-			agents[fd] = agent
-			
-		elseif(cmd=='agent-closed') then
-			skynet.error('agent-closed 1')
-			local _addr = agents[fd]
-			if(_addr) then
-				skynet.error('agent-closed 2',fd,_addr)
+			___agents[fd] = agent
+
+		elseif(cmd=='reg') then
+			local fd, uid = ...
+			skynet.error("reg agent",fd,uid)
+			local ofd = ___uids[uid]
+			if(ofd) then
+				local oaddr = ___agents[ofd]
+				if(oaddr) then
+					skynet.send(oaddr,'lua','replaced')
+				end
+				___agents[ofd] = nil
 			end
-			for _fd,_addr in pairs(agents) do
-				if(_addr==source) then
-					skynet.error('agent-closed 3',_fd,_addr)
-					agents[_fd] = nil
+			___uids[uid] = fd
+			skynet.retpack({ret = true})	
+		elseif(cmd=='agent-closed') then
+			local fd = ...
+			skynet.error('agent-closed 1')
+			local addr = ___agents[fd]
+			if(addr) then
+				skynet.error('agent-closed 2',fd,addr)
+			end
+			for uid,ffdd in pairs(___uids) do
+				if(fd==ffdd) then
+					skynet.error('agent-closed 3',uid)
+					___uids[uid] = nil
 					break
 				end
 			end
-			agents[fd] = nil
+			___agents[fd] = nil
 		end
 	end)
 	skynet.register(".agentmgr")

@@ -91,6 +91,13 @@ datadn 6 {
  }
 }
 
+replaced 7 {
+ request {
+ }
+ response {
+ }
+}
+
 getroom 100 {
  request {
     userid 0 : integer
