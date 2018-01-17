@@ -8,20 +8,12 @@ local str =
 #    wanfa 2 :integer
 #}
 
-.Room {
-    id 0 : integer
-    owner 1 : integer
-    type 2 : integer
-    args 3 : string
-}
-
 .Player {
      user  0 : UserBase
      chair 1 : integer
      online 2 : boolean
      ready 3: boolean
-     ting 4 : boolean
-     hu 5 : boolean
+     autoplay 4: boolean
 }
 .OptCard {
     opt 0 : integer

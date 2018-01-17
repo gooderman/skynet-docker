@@ -3,6 +3,7 @@ local cjson = require "cjson"
 local util = require 'util'
 local sproto = require "sproto"
 local sprotoloader = require "sprotoloader"
+local DISMISS_WAIT_TIME = 30000
 local ___sp = nil
 local ___sptp = 10
 ------------------------------------------------------------
@@ -460,7 +461,7 @@ function GCMD.quit_req(agent,data)
 		vote.agree = vote.agree or {}
 		vote.dismiss = 0
 		vote.time_start = vote.time_start or os.time()
-		vote.time_end = vote.time_end or os.time() + 30000
+		vote.time_end = vote.time_end or os.time() + DISMISS_WAIT_TIME
 		vote.time = vote.time_end - vote.time_start
 		if(not vote.chair) then
 			vote.chair = chair
@@ -530,7 +531,7 @@ function GCMD.dismiss_vote_req(agent,data)
 		end
 		if(yes>n/2) then
 			vote.dismiss = 1
-		elseif(no>n/2) then
+		elseif(no>=n/2) then
 			vote.dismiss = 2
 		end
 
@@ -1564,53 +1565,30 @@ ___hgmap[___OPT_TP_GANG_3]=1
 local ___rdmap={}
 ___rdmap[___OPT_TP_READY]=1
 
-
+--根据状态过滤接受到的信息
+local ___filtermap = {
+	[___ST_WAIT_READY] = ___rdmap,
+	[___ST_WAIT_CHU] = ___chumap,
+	[___ST_WAIT_TING] = ___tingmap,
+	[___ST_WAIT_HU] = ___humap,
+	[___ST_WAIT_CPG] = ___cpgmap,
+	[___ST_WAIT_HUGANG] = ___hgmap,
+}
 --记录胡吃碰杠请求-过滤
 ___optrsp_add = function(opt,idx,data)
 	--当前操作者___optidx 和 idx比较
 	--决定是否接受
-	if(___step_st==___ST_WAIT_CHU) then
-		if(___optidx==idx and ___chumap[opt]) then
-			table.insert(___optrsp,{
-				opt = opt,
-				idx = idx,
-				data = data
-			})
-		end
-	elseif(___step_st==___ST_WAIT_TING) then
-		if(___optidx==idx and ___tingmap[opt]) then
-			table.insert(___optrsp,{
-				opt = opt,
-				idx = idx,
-				data = data
-			})
-		end		
-	elseif ___step_st==___ST_WAIT_HU then
-		if(___optidx==idx and ___humap[opt]) then
-			table.insert(___optrsp,{
-				opt = opt,
-				idx = idx,
-				data = data
-			})
-		end
-			--todo
-	elseif(___step_st == ___ST_WAIT_CPG) then
-		if(___cpgmap[opt]) then
-			table.insert(___optrsp,{
-				opt = opt,
-				idx = idx,
-				data = data
-			})
-		end
-	elseif(___step_st == ___ST_WAIT_HUGANG) then
-		if(___hgmap[opt]) then
-			table.insert(___optrsp,{
-				opt = opt,
-				idx = idx,
-				data = data
-			})
-		end			
+	local mapmap = ___filtermap[___step_st]
+	if(not mapmap) then
+		return
 	end
+	if(___optidx==idx and mapmap[opt]) then
+		table.insert(___optrsp,{
+			opt = opt,
+			idx = idx,
+			data = data
+		})
+	end		
 	if(___costep) then
 		skynet.wakeup(___costep)
 	end
@@ -1620,21 +1598,10 @@ end
 --idx获取指定的玩家，nil获取所有的
 --noclean 不自动清除堆栈
 ___optget = function(type,idx,noclean)
-	local map
-	if(type==___ST_WAIT_CHU) then
-		map = ___chumap
-	elseif(type==___ST_WAIT_TING) then
-		map = ___tingmap
-	elseif(type==___ST_WAIT_HU) then	
-		map = ___humap
-	elseif(type==___ST_WAIT_HUGANG) then	
-		map = ___hgmap
-	elseif(type== ___ST_WAIT_READY) then
-		map = ___rdmap
-	else	
+	local map = ___filtermap[type]
+	if(not map) then	
 	 	assert(false,'___optget type=='..(type or 'nil'))	
 	end
-
 	local n = #___optrsp
 	local r
 	for i=n,1,-1 do
