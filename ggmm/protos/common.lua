@@ -83,7 +83,7 @@ dataup 5 {
 
 datadn 6 {
  request {
-    type 0 :integer #子协议分类
+    type 0 :integer #子协议类别
     cmd 1 :string #子协议命令
     data 2 :string #子协议内容
  }
