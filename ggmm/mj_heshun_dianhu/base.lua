@@ -16,6 +16,13 @@ local map=
 	1,2,3,4,5,6,7,8,9,
 	1,2,3,4,5,6,7
 }
+local score_map =
+{
+	1,2,3,4,5,6,7,8,9,
+	1,2,3,4,5,6,7,8,9,
+	1,2,3,4,5,6,7,8,9,
+	10,10,10,10,10,10,10
+}
 local function parse(id)
 	if(id<1 or id>35) then
 		return 0,0
@@ -158,6 +165,14 @@ local function gencards()
 	return rr
 end
 ------------------------
+local function score(id,zimo)
+	local sc = score_map[id] or 0
+	if(zimo) then
+		sc = sc * 2
+	end
+	return sc
+end	
+------------------------
 local function test()
 	local t={
 		1,2,3,4,5,
@@ -179,6 +194,7 @@ mj.tongji = tongji
 mj.gencards = gencards
 mj.check_cpg = check_cpg
 mj.check_gang = check_gang
+mj.score = score
 --插入
 mj.sub = sub
 mj.add = add

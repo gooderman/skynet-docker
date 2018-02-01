@@ -5,7 +5,7 @@ local sproto = require "sproto"
 local sprotoloader = require "sprotoloader"
 local DISMISS_WAIT_TIME = 30000
 local ___sp = nil
-local ___sptp = 10
+local ___sptp = 10 --子协议类型
 ------------------------------------------------------------
 local ___roominfo = {}
 -- .Room {
@@ -49,18 +49,32 @@ local ___dismiss_vote=nil
 --  time_end
 -- }
 
+local ___finalreport = {}
+-- .FinalReport {
+--     chair 0 : integer
+--     user  1 : UserBase
+--     hu    2 : *boolean #每局胡牌
+--     pao   3 : *boolean #没局点炮牌
+--     score 4 : *integer #每局总分
+--     sumscore 5 : integer #最终分数
+-- }
+
+
 local ___playernum = function() end
 local ___playeradd = function(u) end
 local ___playerdel = function(i) end
 -----------------------
 local ___roomid = 0
-local ___owner = 0
-local ___args = {}
-local ___argstr = ""
+local ___roomowner = 0
+local ___roomargs = {}
+local ___roomargstr = ""
 -- .RoomArgs {
 --      renshu 0 : integer
 --      jushu 1 : integer
 --      wanfa 2 :integer
+--		ting 3 : boolean ##听
+--		bao 4 : boolean ##包
+--		gangf 5 : boolean ##杠算分
 -- }
 local ___self = 0
 local ___cards = {} --所有的牌
@@ -110,35 +124,51 @@ local ___ST_WAIT_CPG = 7
 local ___ST_WAIT_HU = 8
 local ___ST_WAIT_HUGANG = 9 --自己起牌后判断
 
-local ___optmap = {} --操作顺序映射
-local ___ckhu = function() end
-local ___ckting = function() end
-local ___fapai = function() end
-local ___onepai = function() end
-local ___step_st = ___ST_IDLE
-local ___step_info = {}
-local ___stepover = function() end
-local ___step = function() end
-local ___steprecover = function() end --重入状态补发
-local ___setst = function() end
-local ___start = function() end
-local ___stop = function() ___costep = nil end
-local ___hu = function() end
-local ___huang = function() end
-local ___optrsp_add = function() end
-local ___optget = function() end
-local ___optgetcpg = function() end
-local ___optclean = function() end
-local ___emptyfunc = function() end
+local ___ST_PLAYING = 2 --范值
+local ___ST_END = 100 --结束
 
-local ___do_opt = function() end
+local ___optmap = {} --操作顺序映射
+local ___emptyfunc = function() end
+local ___ckhu 		= ___emptyfunc --检查是否虎牌
+local ___ckting 	= ___emptyfunc --检查能否听牌
+local ___fapai 		= ___emptyfunc --发第一手牌13张
+local ___onepai 	= ___emptyfunc --发一张牌
+local ___step_st 	= ___ST_IDLE
+local ___step_info 	= {}
+local ___stepover 	= ___emptyfunc --牌局结束处理
+local ___step 		= ___emptyfunc --处理线程
+local ___steprecover= ___emptyfunc --重入状态补发
+local ___setst 		= ___emptyfunc --设置状态
+local ___start 		= ___emptyfunc --启动___step
+local ___stop 		= function() ___costep = nil end --结束处理线程
+local ___optrsp_add = ___emptyfunc --操作记录
+local ___optget 	= ___emptyfunc --操作取出
+local ___optgetcpg 	= ___emptyfunc --接牌后操作取出
+local ___optclean 	= ___emptyfunc --清除操作记录
+
+local ___report 	= ___emptyfunc --单局结算
+local ___final_report 	= ___emptyfunc --总结算
+local ___calculte_score = ___emptyfunc --计算分
+local ___change_banker 	= ___emptyfunc --改变庄家
+
+local ___do_opt 		= ___emptyfunc --接牌后操作的数据处理
+
+local ___is_state = function(st) --游戏宏观状态 idle，wait，playing ，end
+	return ___gamestate.state==st
+end
+local ___set_state = function(st)
+	___gamestate.state=st
+end
 
 -------------------------------------------
-local function __init()
+--基本的初始化
+--开启服务即运行
+--最早执行
+local function ___init()
 	___sp = sprotoloader.load(___sptp)
 	___roominfo = ___sp:default("RoomBase")
 	___gamestate = ___sp:default("GameState")
-	___gamestate.state = 0
+	___gamestate.state = ___ST_IDLE
 	___gamestate.banker = 1
     ------------------------
     ___gamestate.optchair = 0
@@ -150,8 +180,9 @@ local function __init()
 		player = {},
 		state = ___gamestate
 	}
+	------------------------
 end
-
+--玩家处理
 local function ___playernum()
 	local n = 0
 	for _,p in pairs(___players) do
@@ -163,7 +194,7 @@ local function ___playernum()
 end
 local function ___playeradd(u)
 	local n = ___playernum()
-	local m = ___args.renshu
+	local m = ___roomargs.renshu
 	if(n>=m) then
 		return false,'exceed1'
 	end
@@ -181,7 +212,9 @@ local function ___playerdel(i)
 		___players[i] = nil
 	end	
 end
-
+--通知数据到玩家客户端
+--一般都是打牌协议数据
+--封装协议为data_ntf
 local function ___data_ntf(agent,cmd,con)
 	if(not agent) then
 		return
@@ -189,6 +222,7 @@ local function ___data_ntf(agent,cmd,con)
 	local data = ___sp:encode(cmd,con)
 	skynet.send(agent,'lua','data_ntf',___sptp,cmd,data)
 end
+--通知到玩家agent
 local function ___ntf(agent,cmd,con)
 	skynet.send(agent,'lua',cmd,con)
 end
@@ -199,20 +233,24 @@ local GCMD = {}
 ---cmd from roommgr
 local CMD = {}
 --commond
---create init
+--create init 创建房间信息
 --room = {owner = userid,args = args,user}
 --args = {renshu,jushu,wanfa}
 function CMD.init(info)	
 	___roominfo = info
 	___roomid = info.id
-	___owner = info.owner
-	___args = cjson.decode(info.args)
-	___argstr = info.args
+	___roomowner = info.owner
+	___roomargs = cjson.decode(info.args)
+	___roomargstr = info.args
 	___self = skynet.self()
 
 	___mjcmd = require "mj_heshun_dianhu.lib"
 	___mjlib = require "mj_heshun_dianhu.base"
 
+	--总结算之前只记录分数，总结算时才初始化user信息
+	for i=1,___roomargs.renshu do
+		___finalreport[i] = ___sp:default("FinalReport")
+	end
 	--启动打牌线程
 	___start()
 	return true
@@ -252,7 +290,7 @@ function CMD.join(agent,user)
 			return 0,___roominfo,___self
 		end
 	end
-	if(___playernum()<___args.renshu) then
+	if(___playernum()<___roomargs.renshu) then
 		local info={}
 		info.user=user
 		info.chair = 0
@@ -286,6 +324,7 @@ function CMD.join(agent,user)
 		return -1
 	end
 end
+--来自agent的通知 agent关闭了 下线处理
 function CMD.agent_closed(agent,userid)
 	for i,u in pairs(___players) do
 		local uuu = u.info.user
@@ -305,11 +344,13 @@ function CMD.agent_closed(agent,userid)
 	end
 	-- util.dump(___players,'CMD.agent_closed',6)
 end
-function CMD.close()
-	skynet.call('.roommgr','lua','ntf_dismiss',___roomid)
-	___stop()
-	skynet.exit()
-end
+-- function CMD.close()
+-- 	skynet.call('.roommgr','lua','ntf_dismiss',___roomid)
+-- 	___stop()
+-- 	skynet.exit()
+-- end
+
+--解散房间
 function CMD.dismiss()
 	skynet.call('.roommgr','lua','ntf_dismiss',___roomid)
 	for i,u in pairs(___players) do
@@ -321,6 +362,8 @@ function CMD.dismiss()
 		skynet.exit()
 	end)
 end
+
+--通知roommgr 和 agent ,玩家退出
 function CMD.agentquit(agent,uid)
 	skynet.call('.roommgr','lua','ntf_quit',uid)
 	___ntf(agent,'quit_ntf')
@@ -400,7 +443,7 @@ end
 -------------------------------------------
 --ready
 function GCMD.ready_req(agent,data)
-	if(___gamestate.state==1) then
+	if(___is_state(___ST_PLAYING)) then
 		return
 	end
 	local chair
@@ -438,9 +481,9 @@ function GCMD.quit_req(agent,data)
 		return
 	end
 	--未开始
-	if(___gamestate.state==0) then
+	if(___is_state(___ST_IDLE)) then
 		--dismiss
-		if(___owner==uid) then
+		if(___roomowner==uid) then
 			skynet.error('room GCMD.quit_req to dismiss_ntf')
 			GCMD.dismiss_ntf(chair)
 			CMD.dismiss()
@@ -499,7 +542,7 @@ function GCMD.dismiss_vote_req(agent,data)
 		return
 	end
 	--未开始
-	if(___gamestate.state==0) then
+	if(___is_state(___ST_IDLE)) then
 		return
 	end
 	if(___dismiss_vote and ___dismiss_vote.chair) then
@@ -755,6 +798,21 @@ function GCMD.getcard_ntf(idx,pai)
 	end
 end
 -------------------------------------------
+--单局结算
+function GCMD.report_ntf(tb)
+	local cmd = 'report_ntf'
+	for i,u in pairs(___players) do
+		___data_ntf(u.agent,cmd,tb)
+	end			
+end
+--总结算
+function GCMD.final_report_ntf(tb)
+	local cmd = 'final_report_ntf'
+	for i,u in pairs(___players) do
+		___data_ntf(u.agent,cmd,tb)
+	end			
+
+end
 -------------------------------------------
 -------------------------------------------
 --cmd from agent client
@@ -826,7 +884,7 @@ ___rmcard = function(cards,pai,n)
 	return newcards
 end
 -- check is hu
--- true false
+-- true or false , {is7d = true or false}
 ___ckhu = function(cards,pai,zimo)
 
 	return ___mjcmd.hu(cards,pai,zimo)
@@ -980,6 +1038,10 @@ ___do_opt = function(optidx,from,type,card)
 		table.insert(opt,t)
 	elseif(type==___OPT_TP_HU) then
 		cards.hu = card
+		if(optidx~=from) then
+			cards_from.out = ___rmcard(out_from,card,1)
+			table.insert(hand,card)
+		end
 	elseif(type==___OPT_TP_CHI_L) then
 		cards_from.out = ___rmcard(out_from,card,1)
 		cards.hand = ___rmcard(cards.hand,card+1,1)
@@ -1015,7 +1077,7 @@ end
 
 ___waitready = function()
 	local nn = ___playernum()
-	local m = ___args.renshu
+	local m = ___roomargs.renshu
 	___setst(___ST_WAIT_READY)
 	skynet.error('___waitready begin')
 	while(true) do
@@ -1037,7 +1099,7 @@ ___waitready = function()
 	skynet.error('___waitready end')
 	___setst(___ST_FAPAI)
 	___fapai()
-	___gamestate.state = 1
+	
 	GCMD.gamestart_ntf(___gameinfo)
 end
 
@@ -1175,160 +1237,168 @@ end
 -- }
 --计算起牌后操作
 ___step_self = function(pai)
-		------------------先判断自己能否胡杠操作后循环判断------------------
-		local cards = ___gamestate.cards[___optidx]
-		local handcards =  cards.hand
-		local optcards = cards.opt
-		while(pai) do
-			local hu = false
-			local ting = false
-			if(cards.ting) then
-				hu = ___ckhu(handcards,pai,2)			
-			end
-			local xg = ___ckgangxu(optcards,pai)
-			local ag = ___ckgangan(handcards)
-			if not (hu or xg or ag) then
-				break
-			else
-				local pdata = {}
-				if(hu) then pdata.hu = true end
-				if(xg) then pdata.gangxu = xg end
-				if(ag) then pdata.gangan = ag end
-				GCMD.opt_tip_self(___optidx,pdata)
+	------------------先判断自己能否胡杠操作后循环判断------------------
+	local cards = ___gamestate.cards[___optidx]
+	local handcards =  cards.hand
+	local optcards = cards.opt
+	while(pai) do
+		local hu = false
+		local huparam = {}
+		local ting = false
+		if(cards.ting) then
+			hu,huparam = ___ckhu(handcards,pai,2)			
+		end
+		local xg = ___ckgangxu(optcards,pai)
+		local ag = ___ckgangan(handcards)
+		if not (hu or xg or ag) then
+			break
+		else
+			local pdata = {}
+			if(hu) then pdata.hu = true end
+			if(xg) then pdata.gangxu = xg end
+			if(ag) then pdata.gangan = ag end
+			GCMD.opt_tip_self(___optidx,pdata)
 
-				--wait...
-				___setst(___ST_WAIT_HUGANG)
-				___steprecover = function(idx)
-					if(idx==___optidx) then
-						GCMD.opt_tip_self(___optidx,pdata)
-					end
-				end
-				while(true) do
-					skynet.wait()
-					local ok,data = ___optget(___ST_WAIT_HUGANG,___optidx)
-					if(not ok) then
-					else
-						-- {hu = false, gang2 = false, gang3 = false, pass = true}
-						if(data.hu) then
-							return {hu = true}
-						elseif(data.pass) then
-							break
-						else
-							if(data.gang2) then
-								if(___ckhas(xg,data.gang2)) then
-									___do_opt(___optidx,___optidx,___OPT_TP_GANG_2,data.gang2)
-									GCMD.gang_ntf(___optidx,___OPT_TP_GANG_2,___optidx,data.gang2)
-								else
-									--无效
-									GCMD.invalid_ntf(___optidx)
-								end
-							elseif(data.gang3) then	
-								if(___ckhas(ag,data.gang3)) then
-									___do_opt(___optidx,___optidx,___OPT_TP_GANG_3,data.gang3)
-									GCMD.gang_ntf(___optidx,___OPT_TP_GANG_3,___optidx,data.gang3)
-								else
-									--无效
-									GCMD.invalid_ntf(___optidx)
-								end
-							end
-							pai = ___onepai(___optidx)
-							if(not pai) then
-								--荒
-								return {huang = true}
-							else
-								--通知发牌
-								GCMD.getcard_ntf(___optidx,pai)
-							end
-						end
-						break
-					end	
-				end
-				___steprecover = ___emptyfunc
-			end
-		end
-		------------------再判断听牌 并 出牌------------------
-		local outcard
-		local ting
-		if(not cards.ting) then
-			ting = ___ckting(handcards)
-		end
-		if(ting and #ting>0) then
-			GCMD.ting_tip(___optidx,ting)
 			--wait...
-			___setst(___ST_WAIT_TING)
+			___setst(___ST_WAIT_HUGANG)
 			___steprecover = function(idx)
 				if(idx==___optidx) then
-					GCMD.ting_tip(___optidx,ting)
+					GCMD.opt_tip_self(___optidx,pdata)
 				end
 			end
 			while(true) do
 				skynet.wait()
-				local ok,isting,chupai = ___optget(___ST_WAIT_TING,___optidx)
-				if(ok) then
-					if(isting) then
-						--判断是否有效
-						--有效听牌修改听牌状态
-						local valid = false
-						for _,v in ipairs(ting) do
-							if(v.card == chupai) then
-								valid = true
-								break
-							end
-						end	
-						if(valid) then
-							___do_opt(___optidx,___optidx,___OPT_TP_TING,chupai)
-							GCMD.chu_ntf(___optidx,chupai)
-							GCMD.ting_ntf(___optidx,chupai)
-							outcard = chupai
-							break
+				local ok,data = ___optget(___ST_WAIT_HUGANG,___optidx)
+				if(not ok) then
+				else
+					-- {hu = false, gang2 = false, gang3 = false, pass = true}
+					if(data.hu) then
+						if(hu) then
+							return {hu = true,zimo=true, hucard=pai, huparam=huparam}
 						else
-							--无效则
+							--无效
 							GCMD.invalid_ntf(___optidx)
 						end
+					elseif(data.pass) then
+						break
 					else
-						--修改玩家出牌表
-						--出牌通告
-						___do_opt(___optidx,___optidx,___OPT_TP_CHU,chupai)
-						GCMD.chu_ntf(___optidx,chupai)
-						outcard = chupai
-						break
+						if(data.gang2) then
+							if(___ckhas(xg,data.gang2)) then
+								___do_opt(___optidx,___optidx,___OPT_TP_GANG_2,data.gang2)
+								GCMD.gang_ntf(___optidx,___OPT_TP_GANG_2,___optidx,data.gang2)
+							else
+								--无效
+								GCMD.invalid_ntf(___optidx)
+							end
+						elseif(data.gang3) then	
+							if(___ckhas(ag,data.gang3)) then
+								___do_opt(___optidx,___optidx,___OPT_TP_GANG_3,data.gang3)
+								GCMD.gang_ntf(___optidx,___OPT_TP_GANG_3,___optidx,data.gang3)
+							else
+								--无效
+								GCMD.invalid_ntf(___optidx)
+							end
+						end
+						pai = ___onepai(___optidx)
+						if(not pai) then
+							--荒
+							return {huang = true}
+						else
+							--通知发牌
+							GCMD.getcard_ntf(___optidx,pai)
+						end
 					end
-				end
-			end
-			___steprecover = ___emptyfunc
-		else
-			--提示出牌
-			GCMD.chu_tip(___optidx)
-			--wait...
-			___setst(___ST_WAIT_CHU)
-			___steprecover = function(idx)
-				if(idx==___optidx) then
-					GCMD.chu_tip(___optidx)
-				end
-			end
-			while(true) do
-				skynet.wait()
-				local ok,chupai = ___optget(___ST_WAIT_CHU,___optidx)
-				if(ok) then
-					if(chupai) then
-						--修改玩家出牌表
-						--出牌通告
-						-- table.insert(cards.out,chupai)
-						___do_opt(___optidx,___optidx,___OPT_TP_CHU,chupai)
-						GCMD.chu_ntf(___optidx,chupai)
-						outcard = chupai
-						break
-					end
-				end
+					break
+				end	
 			end
 			___steprecover = ___emptyfunc
 		end
-		return {outcard=outcard}
+	end
+	------------------再判断听牌 并 出牌------------------
+	local outcard
+	local ting
+	if(not cards.ting) then
+		ting = ___ckting(handcards)
+	end
+	if(ting and #ting>0) then
+		GCMD.ting_tip(___optidx,ting)
+		--wait...
+		___setst(___ST_WAIT_TING)
+		___steprecover = function(idx)
+			if(idx==___optidx) then
+				GCMD.ting_tip(___optidx,ting)
+			end
+		end
+		while(true) do
+			skynet.wait()
+			local ok,isting,chupai = ___optget(___ST_WAIT_TING,___optidx)
+			if(ok) then
+				if(isting) then
+					--判断是否有效
+					--有效听牌修改听牌状态
+					local valid = false
+					for _,v in ipairs(ting) do
+						if(v.card == chupai) then
+							valid = true
+							break
+						end
+					end	
+					if(valid) then
+						___do_opt(___optidx,___optidx,___OPT_TP_TING,chupai)
+						GCMD.chu_ntf(___optidx,chupai)
+						GCMD.ting_ntf(___optidx,chupai)
+						outcard = chupai
+						break
+					else
+						--无效则
+						GCMD.invalid_ntf(___optidx)
+					end
+				else
+					--修改玩家出牌表
+					--出牌通告
+					___do_opt(___optidx,___optidx,___OPT_TP_CHU,chupai)
+					GCMD.chu_ntf(___optidx,chupai)
+					outcard = chupai
+					break
+				end
+			end
+		end
+		___steprecover = ___emptyfunc
+	else
+		--提示出牌
+		GCMD.chu_tip(___optidx)
+		--wait...
+		___setst(___ST_WAIT_CHU)
+		___steprecover = function(idx)
+			if(idx==___optidx) then
+				GCMD.chu_tip(___optidx)
+			end
+		end
+		while(true) do
+			skynet.wait()
+			local ok,chupai = ___optget(___ST_WAIT_CHU,___optidx)
+			if(ok) then
+				if(chupai) then
+					--修改玩家出牌表
+					--出牌通告
+					-- table.insert(cards.out,chupai)
+					___do_opt(___optidx,___optidx,___OPT_TP_CHU,chupai)
+					GCMD.chu_ntf(___optidx,chupai)
+					outcard = chupai
+					break
+				end
+			end
+		end
+		___steprecover = ___emptyfunc
+	end
+	return {outcard=outcard}
 end
 
 ___step = function()
 
 	___waitready()
+
+	___set_state(___ST_PLAYING)
 
 	local nn = ___playernum()
 	--庄家
@@ -1339,7 +1409,7 @@ ___step = function()
 		if(not pai) then
 			--荒
 			GCMD.huang_ntf()
-			___stepover(false,true)
+			___stepover({hu=false,huang=true})
 			return
 		end
 		--通知发牌
@@ -1351,12 +1421,12 @@ ___step = function()
 		------------------先判断自己能否杠胡听-提示-并等待出牌------------------
 		local data = ___step_self(pai)
 		if(data.hu) then
-			GCMD.hu_ntf(___optidx,___optidx,pai,true)
-			___stepover(___optidx,false)
+			GCMD.hu_ntf(___optidx,___optidx,data.hucard,true)
+			___stepover({hu=___optidx, zimo=true, hucard=data.hucard,huparam = data.huparam, huang = false})
 			return
 		elseif(data.huang) then
 			GCMD.huang_ntf()
-			___stepover(false,true)
+			___stepover({hu = false,huang = true})
 			return
 		else
 			outcard = data.outcard
@@ -1371,15 +1441,17 @@ ___step = function()
 			local abc = ___optmap[nn][___optidx]
 			--获取每个人可用操作
 			local hasopt = false
+			local huparams = {}
 			for _,idx in ipairs(abc) do
 				r[idx] = {}
 				local cards = ___gamestate.cards[idx]
 				local hand = cards.hand
 				if(cards.ting) then
-					local canhu = ___ckhu(hand,outcard,1)
+					local canhu,huparam = ___ckhu(hand,outcard,1)
 					if(canhu) then
 						table.insert(r[idx],___OPT_TP_HU)
 						hasopt = true
+						huparams[idx] = huparam
 					end
 				else
 					local cpg = ___ckcpg(hand,outcard)
@@ -1462,18 +1534,19 @@ ___step = function()
 							local pai
 							if(isopttype==___OPT_TP_HU) then
 								___do_opt(isoptidx,___optidx,___OPT_TP_HU,outcard)
-								GCMD.hu_ntf(isoptidx,___optidx,pai,false)
-								___stepover(isoptidx,true)
+								GCMD.hu_ntf(isoptidx,___optidx,outcard,false)
+								local huparam = huparams[isoptidx]
+								___stepover({hu = isoptidx,zimo = false, hucard = outcard, huparam = huparam, dianpao=___optidx,huang =false})
 								return
 							elseif(isopttype==___OPT_TP_GANG_1) then
 								___do_opt(isoptidx,___optidx,isopttype,outcard)
 								GCMD.gang_ntf(isoptidx,isopttype,___optidx,outcard)
 								___optidx = isoptidx
-								local pai = ___onepai(___optidx)
+								pai = ___onepai(___optidx)
 								if(not pai) then
 									--荒
 									GCMD.huang_ntf()
-									___stepover(false,true)
+									___stepover({hu = false,huang=true})
 									return
 								end
 								--通知发牌
@@ -1490,12 +1563,12 @@ ___step = function()
 							___optidx = isoptidx							
 							local data = ___step_self(pai)
 							if(data.hu) then
-								GCMD.hu_ntf(___optidx,___optidx,pai,true)
-								___stepover(___optidx,false)
+								GCMD.hu_ntf(___optidx,___optidx,data.hucard,true)
+								___stepover({hu=___optidx, zimo=true, hucard=data.hucard,huparam = data.huparam, huang = false})
 								return
 							elseif(data.huang) then
 								GCMD.huang_ntf()
-								___stepover(false,true)
+								___stepover({hu=false,huang=true})
 								return
 							else
 								outcard = data.outcard
@@ -1523,17 +1596,191 @@ end
 ___start = function()
 	___costep = skynet.fork(___step)
 end
-__restart = function()
+___restart = function()
 	___costep = nil
 	___costep = skynet.fork(___step)
 end
+___end = function()
+	___costep = nil
+end
 --结局
-___stepover = function(hu,huang)
+-- {
+-- 	hu,--胡牌idx
+-- 	hucard,--胡的牌
+--  huparam,--胡牌类型(is7d,is13y)
+-- 	zimo,--是否自摸
+-- 	dianpao,--点炮idx
+-- 	huang,--是否黄庄
+-- }
+___stepover = function(t)
+	local hu = t.hu
+	local zimo = t.zimo
+	local hucard = t.hucard
+	local huparam = t.huparam
+	local dianpao = t.dianpao
+	local huang = t.huang
 	--重置恢复函数
 	___steprecover = ___emptyfunc
 	skynet.error('___stepover',hu,huang)
-	__restart()
+	util.dump(t,'___stepover result')
+
+	___report(t)
+
+	if(___gamestate.jushu+1 <= ___roomargs.jushu) then
+		___gamestate.jushu = ___gamestate.jushu+1
+		___change_banker(t)
+		___set_state(___ST_WAIT_READY)
+		__restart()
+	else
+		___final_report()
+		___set_state(___ST_END)
+		___end()
+	end
 end
+--换庄
+___change_banker = function(t)
+	--庄家连坐，点炮顺延
+	if(t.hu and t.hu == ___gamestate.banker) then
+       return false,___gamestate.banker
+	else
+	   local idx = ___gamestate.banker+1
+	   if(idx>___playernum()) then
+	      idx = 1
+	   end
+	   ___gamestate.banker = idx
+	   return true, idx
+	end
+end
+--单局结算
+___report = function(t)
+	local __ffrr = ___finalreport
+	local rr = {}
+	local info = {}
+	rr.hu = false
+	rr.huang = false
+	rr.info = info
+	
+	for i,p in ipairs(___players) do
+		local r = ___sp:default("Report")
+		r.chair = p.info.chair
+		r.user = p.info.user
+		r.hu = false
+		r.pao = false
+		r.score = 0
+		r.param = {}
+		info[i] = r
+	end
+	if(t.hu) then
+		rr.hu = true
+		info[t.hu].hu = true
+		if(not t.zimo) then
+			info[t.dianpao].pao = true
+		end
+		--计算分数
+		local ss = ___calculte_score(t)
+		for i,s in ipairs(ss) do
+			info[i].score = s.score
+
+			--记录到总结算
+			__ffrr[i].sumscore = __ffrr[i].sumscore+s.score
+			table.insert(__ffrr[i].score,s.score)
+			if(info[i].hu) then
+				table.insert(__ffrr[i].hu,true)
+			else
+				table.insert(__ffrr[i].hu,false)
+			end	
+			if(info[i].pao) then
+				table.insert(__ffrr[i].pao,true)
+			else	
+				table.insert(__ffrr[i].pao,false)
+			end
+		end
+	elseif(t.huang) then
+		rr.huang = true
+		for i,iiff in ipairs(info) do
+			iiff.score = 0
+			--记录到总结算
+			table.insert(__ffrr[i].score,0)
+			table.insert(__ffrr[i].hu,false)
+			table.insert(__ffrr[i].pao,false)
+		end
+	end
+	GCMD.report_ntf(rr)
+end
+
+--总结算
+___final_report = function(t)
+	for i,v in ipairs(___finalreport) do
+		v.chair = ___players[i].info.chair
+		v.user = ___players[i].info.user
+	end
+	GCMD.final_report_ntf({info=___finalreport})
+end
+
+--算分
+___calculte_score = function(t)
+	local is_bao = ___roomargs.bao --全包
+	local is_gangf = ___roomargs.gangf --杠分
+	local n = ___playernum()
+	local ss = {}
+	local is_dianpao = false
+	local idx_hu = t.hu or false
+	local idx_dp = t.dianpao or false
+	for i=1,n do
+		local s = {hf=0,gf=0,dpf=0,sf=0,score=0}
+		local cards = ___gamestate.cards[i]
+		local opt = cards.opt
+		local is_hugang = false
+		if(idx_hu == i) then
+			s.hf = ___mjlib.score(t.hucard,t.zimo)
+			is_hugang = true
+		elseif(idx_dp == i) then
+			s.dpf = 0 - ___mjlib.score(t.hucard)	
+			if(not cards.ting) then
+				is_dianpao = true
+			end
+		end
+		--只要杠就算分,或者胡家杠
+		if(is_gangf or is_hugang) then
+			for _,v in ipairs(opt) do
+				if(v.opt == ___OPT_TP_GANG_1) then
+					s.gf = s.gf + ___mjlib.score(v.card)
+				elseif(v.opt == ___OPT_TP_GANG_2) then
+					s.gf = s.gf + ___mjlib.score(v.card)
+				elseif(v.opt == ___OPT_TP_GANG_3) then
+					s.gf = s.gf + ___mjlib.score(v.card,true)
+				end
+			end
+		end
+		ss[i] = s
+	end
+	--先算出正常情况下分
+	--遍历 加上自己的赢的 减去别人赢的
+	for i=1,n do
+		local si = ss[i]
+		for j=1,n do
+			local sj = ss[j]
+			if(i~=j) then
+				si.score = si.score + si.hf+si.gf - (sj.hf+sj.gf)
+			end
+		end
+	end
+	--点炮没听全包 重新计算
+	if(is_bao and is_dianpao) then
+		local bao_score = 0
+		for i=1,n do
+			local s = ss[j]
+			if(s.score<0) then
+				bao_score = bao_score + s.score
+				s.score = 0
+			end
+		end
+		ss[idx_dp].score = bao_score
+	else
+	end
+	return ss
+end
+
 --其他玩家吃碰杠胡过
 local ___cpgmap={}
 ___cpgmap[___OPT_TP_PASS]=1
@@ -1582,7 +1829,9 @@ ___optrsp_add = function(opt,idx,data)
 	if(not mapmap) then
 		return
 	end
-	if(___optidx==idx and mapmap[opt]) then
+	-- if(___optidx==idx and mapmap[opt]) then
+	--不能限定___optidx，cpgh需要其他玩家的消息
+	if(mapmap[opt]) then
 		table.insert(___optrsp,{
 			opt = opt,
 			idx = idx,
@@ -1671,8 +1920,9 @@ end
 ----一局流程完成
 ----大框架完成k
 ----数据操作处理
+----和牌和结束以后结算数据和流程处理
 ----待完成
---和牌和结束以后结算数据和流程处理
+--听牌处理
 --数据剔除处理，别人的数据剔除后再发
 -------------------------------------------
 --测试到发牌出牌
@@ -1681,9 +1931,9 @@ end
 skynet.start(function()
 	
 	-- skynet.fork(test)
-	__init()
+	___init()
 	skynet.info_func(function()
-		return {st = ___step_st, line = ___step_info.currentline, func = ___step_info.name,roomid=___roomid,args = ___argstr}
+		return {st = ___step_st, line = ___step_info.currentline, func = ___step_info.name,roomid=___roomid,args = ___roomargstr}
 	end)
 	skynet.dispatch('lua',function(session, source, cmd,...)
 		if(CMD[cmd]) then

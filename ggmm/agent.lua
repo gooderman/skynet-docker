@@ -56,7 +56,7 @@ function COMMAND.closed(msg)
 end
 
 function COMMAND.close(msg)
-	skynet.error('COMMAND.close')
+	skynet.error('COMMAND.close by reason',msg)
 	COMMAND.closed(msg)
 end
 --reg to agentmgr: one uid multidevice login will be replaceed

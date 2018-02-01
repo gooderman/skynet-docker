@@ -3,9 +3,12 @@ local str =
 [[
 
 #.RoomArgs {
-#    renshu 0 : integer
-#    jushu 1 : integer
-#    wanfa 2 :integer
+#     renshu 0 : integer
+#     jushu 1 : integer
+#     wanfa 2 :integer
+#     ting 3 : boolean ##报听
+#     bao 4 : boolean ##点炮全包
+#     gangf 5 : boolean ##杠就算分
 #}
 
 .Player {
@@ -218,6 +221,44 @@ local str =
 .invalid_ntf {
     chair 0 :integer
     type 1 : integer
+}
+
+.ReportInfo {
+    hucard 0 : integer
+    iszm 1 : boolean
+    is7d 2 : boolean
+    is13y 3 : boolean
+}
+
+.Report {
+    chair 0 : integer
+    user  1 : UserBase
+    hu    2 : boolean
+    pao   3 : boolean #点炮
+    score 4 : integer #总分
+    param  5 : ReportInfo #和牌信息
+    cards 6 : Cards #牌
+    sumscore 7 : integer #总分
+}
+
+.FinalReport {
+    chair 0 : integer
+    user  1 : UserBase
+    hu    2 : *boolean #每局胡牌
+    pao   3 : *boolean #没局点炮牌
+    score 4 : *integer #每局总分
+    sumscore 5 : integer #最终分数
+}
+
+#结算
+.report_ntf {
+    hu   0 : boolean
+    huang 1 : boolean
+    info 2 : *Report
+}
+
+.final_report_ntf {
+    info 0 : *FinalReport
 }
 
 .quit_req {

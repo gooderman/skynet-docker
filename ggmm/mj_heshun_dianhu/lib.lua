@@ -358,7 +358,7 @@ function CMD.hu(pai,id,zimo)
 		local t,tc= __tongji(pai)
 		local a = CMD.hu7D__(t,tc)
 		local b = CMD.huA__(t)
-		return a or b
+		return a or b,{is7d = b and true or false,is13y = false}
 	else
 		return false
 	end
