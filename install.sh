@@ -21,7 +21,8 @@ make
 cd ..
 ####################################################
 rm -rf lua-cjson
-git clone https://github.com/mpx/lua-cjson.git
+# git clone https://github.com/mpx/lua-cjson.git
+git clone https://github.com/cloudwu/lua-cjson.git
 cd lua-cjson
 mv Makefile Makefile_origin
 cp ../lua-cjson.Makefile Makefile
