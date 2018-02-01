@@ -142,7 +142,7 @@ local str =
     chair 1 : integer
     type 2 : integer #ming xu an
     from 3 : integer  
-    card 4 : integer
+    card 4 : integer #暗杠hide
 }
 
 .chu_tip {
@@ -220,7 +220,8 @@ local str =
 
 .invalid_ntf {
     chair 0 :integer
-    type 1 : integer
+    type 1 : integer #opt type
+    info 2 : string #reason
 }
 
 .ReportInfo {

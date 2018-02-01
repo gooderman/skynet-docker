@@ -76,6 +76,10 @@ local ___roomargstr = ""
 --		bao 4 : boolean ##包
 --		gangf 5 : boolean ##杠算分
 -- }
+local ___room_dpbao = false --是否点炮包胡
+local ___room_baoting = false --是否报听，听了才能胡，听了点炮不包，听了不可换牌
+local ___room_gangf = false --只要杠就算分
+-----------------------
 local ___self = 0
 local ___cards = {} --所有的牌
 local ___cardidx = 0 --发牌索引
@@ -235,13 +239,26 @@ local CMD = {}
 --commond
 --create init 创建房间信息
 --room = {owner = userid,args = args,user}
---args = {renshu,jushu,wanfa}
+--args = 
+-- #.RoomArgs {
+-- #     renshu 0 : integer
+-- #     jushu 1 : integer
+-- #     wanfa 2 :integer
+-- #     ting 3 : boolean ##报听
+-- #     bao 4 : boolean ##点炮全包
+-- #     gangf 5 : boolean ##杠就算分
+-- #}
 function CMD.init(info)	
 	___roominfo = info
 	___roomid = info.id
 	___roomowner = info.owner
 	___roomargs = cjson.decode(info.args)
 	___roomargstr = info.args
+	
+	___room_dpbao = ___roomargs.bao
+	___room_baoting = ___roomargs.ting
+	___room_gangf = ___roomargs.gangf
+	
 	___self = skynet.self()
 
 	___mjcmd = require "mj_heshun_dianhu.lib"
@@ -281,6 +298,9 @@ function CMD.join(agent,user)
 				___gameinfo.player = players
 				GCMD.gameinfo_ntf(agent,___gameinfo)
 				------------------------------------------
+				---recover opt---
+				___steprecover()
+
 				if(___dismiss_vote) then
 					GCMD.dismiss_vote_ntf(___dismiss_vote)
 				end
@@ -313,6 +333,7 @@ function CMD.join(agent,user)
 
 			GCMD.gameinfo_ntf(agent,___gameinfo)
 			------------------------------------------
+
 			if(___dismiss_vote) then
 				GCMD.dismiss_vote_ntf(___dismiss_vote)
 			end
@@ -422,6 +443,7 @@ function GCMD.dismiss_vote_ntf(vote)
 	end
 end
 --gameinfo_ntf
+--剔除隐私数据
 function GCMD.gameinfo_ntf(agent,gameinfo)
 	local cmd = 'gameinfo_ntf'
 	for i,u in pairs(___players) do
@@ -433,6 +455,7 @@ function GCMD.gameinfo_ntf(agent,gameinfo)
 	end
 end
 --gamestart_ntf
+--剔除隐私数据
 function GCMD.gamestart_ntf(gameinfo)
 	local cmd = 'gamestart_ntf'
 	for i,u in pairs(___players) do
@@ -729,6 +752,7 @@ function GCMD.gang_req(agent,data)
 	end		
 end
 --gang_ntf
+--剔除隐私数据
 function GCMD.gang_ntf(idx,type,from,card)
 	local cmd = 'gang_ntf'
 	for i,u in pairs(___players) do
@@ -772,11 +796,11 @@ function GCMD.pass_req(agent,data)
 	end		
 end
 --invalid_ntf
-function GCMD.invalid_ntf(idx,type)
+function GCMD.invalid_ntf(idx,type,info)
 	local cmd = 'invalid_ntf'
 	for i,u in pairs(___players) do
 		if(idx==i) then
-			___data_ntf(u.agent,cmd,{chair=idx,type=type})
+			___data_ntf(u.agent,cmd,{chair=idx,type=type,info = info})
 			break
 		end
 	end	
@@ -784,6 +808,7 @@ end
 -----------------------
 -------------------------------------------
 --getcard_ntf
+--剔除隐私数据
 function GCMD.getcard_ntf(idx,pai)
 	local cmd = 'getcard_ntf'
 	for i,u in pairs(___players) do
@@ -1245,8 +1270,12 @@ ___step_self = function(pai)
 		local hu = false
 		local huparam = {}
 		local ting = false
-		if(cards.ting) then
-			hu,huparam = ___ckhu(handcards,pai,2)			
+		if(___room_baoting) then
+			if(cards.ting) then
+				hu,huparam = ___ckhu(handcards,pai,2)
+			end
+		else
+			hu,huparam = ___ckhu(handcards,pai,2)
 		end
 		local xg = ___ckgangxu(optcards,pai)
 		local ag = ___ckgangan(handcards)
@@ -1277,7 +1306,7 @@ ___step_self = function(pai)
 							return {hu = true,zimo=true, hucard=pai, huparam=huparam}
 						else
 							--无效
-							GCMD.invalid_ntf(___optidx)
+							GCMD.invalid_ntf(___optidx,___OPT_TP_HU,'#-can not hu-#')
 						end
 					elseif(data.pass) then
 						break
@@ -1288,7 +1317,8 @@ ___step_self = function(pai)
 								GCMD.gang_ntf(___optidx,___OPT_TP_GANG_2,___optidx,data.gang2)
 							else
 								--无效
-								GCMD.invalid_ntf(___optidx)
+								GCMD.invalid_ntf(___optidx,___OPT_TP_GANG_2,'#-can not gang2-#')
+
 							end
 						elseif(data.gang3) then	
 							if(___ckhas(ag,data.gang3)) then
@@ -1296,7 +1326,7 @@ ___step_self = function(pai)
 								GCMD.gang_ntf(___optidx,___OPT_TP_GANG_3,___optidx,data.gang3)
 							else
 								--无效
-								GCMD.invalid_ntf(___optidx)
+								GCMD.invalid_ntf(___optidx,___OPT_TP_GANG_3,'#-can not gang3-#')
 							end
 						end
 						pai = ___onepai(___optidx)
@@ -1317,8 +1347,10 @@ ___step_self = function(pai)
 	------------------再判断听牌 并 出牌------------------
 	local outcard
 	local ting
-	if(not cards.ting) then
-		ting = ___ckting(handcards)
+	if(___room_baoting) then
+		if(not cards.ting) then
+			ting = ___ckting(handcards)
+		end
 	end
 	if(ting and #ting>0) then
 		GCMD.ting_tip(___optidx,ting)
@@ -1351,7 +1383,7 @@ ___step_self = function(pai)
 						break
 					else
 						--无效则
-						GCMD.invalid_ntf(___optidx)
+						GCMD.invalid_ntf(___optidx,___OPT_TP_TING,'#-ting card invalid-#')
 					end
 				else
 					--修改玩家出牌表
@@ -1379,6 +1411,13 @@ ___step_self = function(pai)
 			local ok,chupai = ___optget(___ST_WAIT_CHU,___optidx)
 			if(ok) then
 				if(chupai) then
+					if(___room_baoting and cards.ting) then
+						if(chupai~=pai) then
+							--无效
+							GCMD.invalid_ntf(___optidx,___OPT_TP_CHU,'#-had ting can not change card-#')
+							break
+						end
+					end
 					--修改玩家出牌表
 					--出牌通告
 					-- table.insert(cards.out,chupai)
@@ -1446,18 +1485,33 @@ ___step = function()
 				r[idx] = {}
 				local cards = ___gamestate.cards[idx]
 				local hand = cards.hand
-				if(cards.ting) then
-					local canhu,huparam = ___ckhu(hand,outcard,1)
-					if(canhu) then
-						table.insert(r[idx],___OPT_TP_HU)
-						hasopt = true
-						huparams[idx] = huparam
+				if(___room_baoting) then
+					--报听后不可换牌
+					if(cards.ting) then
+						local canhu,huparam = ___ckhu(hand,outcard,1)
+						if(canhu) then
+							table.insert(r[idx],___OPT_TP_HU)
+							hasopt = true
+							huparams[idx] = huparam
+						end
+					else
+						local cpg = ___ckcpg(hand,outcard)
+						if(cpg) then
+							r[idx] = cpg
+							hasopt = true
+						end
 					end
 				else
 					local cpg = ___ckcpg(hand,outcard)
 					if(cpg) then
 						r[idx] = cpg
 						hasopt = true
+					end
+					local canhu,huparam = ___ckhu(hand,outcard,1)
+					if(canhu) then
+						table.insert(r[idx],1,___OPT_TP_HU)
+						hasopt = true
+						huparams[idx] = huparam
 					end
 				end
 			end
@@ -1526,6 +1580,7 @@ ___step = function()
 					else	
 						local isopttype = -1
 						local isoptidx = 0
+						--___waitcpg has check
 						isopttype, isoptidx = ___waitcpg(r,abc,hh,gg,pp,cc)
 						--确定操作
 						if(isopttype<0 or isoptidx<0) then
@@ -1719,8 +1774,8 @@ end
 
 --算分
 ___calculte_score = function(t)
-	local is_bao = ___roomargs.bao --全包
-	local is_gangf = ___roomargs.gangf --杠分
+	local is_bao = ___room_dpbao --全包
+	local is_gangf = ___room_gangf --杠分
 	local n = ___playernum()
 	local ss = {}
 	local is_dianpao = false
@@ -1921,9 +1976,10 @@ end
 ----大框架完成k
 ----数据操作处理
 ----和牌和结束以后结算数据和流程处理
+--听牌处理-报听和不报听处理
 ----待完成
---听牌处理
 --数据剔除处理，别人的数据剔除后再发
+--剔除隐私信息
 -------------------------------------------
 --测试到发牌出牌
 -------------------------------------------
