@@ -167,6 +167,14 @@ function command.del_alluser()
 	return true
 end
 
+function command.save_play_record()
+	skynet.error("save_play_record ")
+	-- stmt_delalluser = stmt_delalluser or db:prepare(sql_delalluser)
+	-- stmt_delalluser:step()
+	-- stmt_delalluser:reset()
+	return true
+end
+
 skynet.start(function()
 	skynet.dispatch("lua", function(session, address, cmd, ...)
 		local f = command[cmd]

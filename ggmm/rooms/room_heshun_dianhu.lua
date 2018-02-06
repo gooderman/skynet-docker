@@ -3,6 +3,7 @@ local cjson = require "cjson"
 local util = require 'util'
 local sproto = require "sproto"
 local sprotoloader = require "sprotoloader"
+local crypt = require "client.crypt"
 local DISMISS_WAIT_TIME = 30000
 local ___sp = nil
 local ___sptp = 10 --子协议类型
@@ -85,19 +86,15 @@ local ___cards = {} --所有的牌
 local ___cardidx = 0 --发牌索引
 local ___costep = nil --step线程
 
-local ___optchair = 0 --操作人
-local ___optidx = 0
-local ___opttype = 0 --操作类型 hu chi peng gang
-local ___optvalue = 0 --操作牌
-local ___optrec = {} --操作记录
-
+local ___optidx = 0 --操作人
 -- {
 -- 	opt = opt, --操作
 -- 	idx = idx, --索引
 -- 	data = data --协议数据
 -- }
 local ___optrsp = {} --一人出牌以后，其他人截胡吃碰杠堆栈--
-local ___optrec = {} --最后下发的cpg消息，保存待重发时使用。下发给___optcpg栈顶玩家
+
+local ___optrec = {} --操作记录,回放功能需要的数据，只记录xxx_ntf协议
 
 -------------------------------------------
 local ___mjlib = {}
@@ -156,6 +153,11 @@ local ___calculte_score = ___emptyfunc --计算分
 local ___change_banker 	= ___emptyfunc --改变庄家
 
 local ___do_opt 		= ___emptyfunc --接牌后操作的数据处理
+
+local ___optrec_add	= ___emptyfunc --记录出牌数据
+local ___optrec_reset = ___emptyfunc --初始化数据，每一局
+local ___optrec_clean	= ___emptyfunc --清除记录出牌数据
+local ___optrec_save = ___emptyfunc --存档一局打完
 
 local ___is_state = function(st) --游戏宏观状态 idle，wait，playing ，end
 	return ___gamestate.state==st
@@ -268,6 +270,7 @@ function CMD.init(info)
 	for i=1,___roomargs.renshu do
 		___finalreport[i] = ___sp:default("FinalReport")
 	end
+	___optrec_reset()
 	--启动打牌线程
 	___start()
 	return true
@@ -430,17 +433,23 @@ end
 --dismiss_ntf
 function GCMD.dismiss_ntf(chair)
 	local cmd = 'dismiss_ntf'
+	local data = {chair = chair}
 	for i,u in pairs(___players) do
-		___data_ntf(u.agent,cmd,{chair = chair})
+		___data_ntf(u.agent,cmd,data)
+	end
+	if (___is_state(___ST_PLAYING)) then
+		___optrec_add(cmd,data)
 	end
 end
 --dismiss_vote_ntf
 function GCMD.dismiss_vote_ntf(vote)
 	local cmd = 'dismiss_vote_ntf'
 	local time = vote.time_end - vote.time_start
+	local data = {chair = vote.chair,agree=vote.agree,dismiss=vote.dismiss,time = time}
 	for i,u in pairs(___players) do
-		___data_ntf(u.agent,cmd,{chair = vote.chair,agree=vote.agree,dismiss=vote.dismiss,time = time})
+		___data_ntf(u.agent,cmd,data)
 	end
+	___optrec_add(cmd,data)
 end
 --gameinfo_ntf
 --剔除隐私数据
@@ -458,9 +467,11 @@ end
 --剔除隐私数据
 function GCMD.gamestart_ntf(gameinfo)
 	local cmd = 'gamestart_ntf'
+	local data = {game = gameinfo}
 	for i,u in pairs(___players) do
-		___data_ntf(u.agent,cmd,{game = gameinfo})
+		___data_ntf(u.agent,cmd,data)
 	end
+	___optrec_add(cmd,data)
 end
 
 -------------------------------------------
@@ -637,9 +648,11 @@ end
 --chu_ntf
 function GCMD.chu_ntf(idx,card)
 	local cmd = 'chu_ntf'
+	local data = {chair=idx,card=card}
 	for i,u in pairs(___players) do
-		___data_ntf(u.agent,cmd,{chair=idx,card=card})
+		___data_ntf(u.agent,cmd,data)
 	end	
+	___optrec_add(cmd,data)
 end
 -----------------------
 --ting_tip
@@ -663,9 +676,11 @@ end
 --ting_ntf
 function GCMD.ting_ntf(idx,card)
 	local cmd = 'ting_ntf'
+	local data = {chair=idx,card=card}
 	for i,u in pairs(___players) do
-		___data_ntf(u.agent,cmd,{chair=idx,card=card})
+		___data_ntf(u.agent,cmd,data)
 	end	
+	___optrec_add(cmd,data)
 end
 -----------------------
 --hu_tip
@@ -684,16 +699,20 @@ end
 --hu_ntf
 function GCMD.hu_ntf(idx,from,card,zimo)
 	local cmd = 'hu_ntf'
+	local data = {chair=idx,from=from, card=card, zimo=zimo} 
 	for i,u in pairs(___players) do
-		___data_ntf(u.agent,cmd,{chair=idx,from=from, card=card, zimo=zimo})
+		___data_ntf(u.agent,cmd,data)
 	end	
+	___optrec_add(cmd,data)
 end
 --huang_ntf
 function GCMD.huang_ntf()
 	local cmd = 'huang_ntf'
+	local data = {}
 	for i,u in pairs(___players) do
-		___data_ntf(u.agent,cmd,{})
+		___data_ntf(u.agent,cmd,data)
 	end	
+	___optrec_add(cmd,data)
 end
 -----------------------
 --chi_tip
@@ -712,9 +731,11 @@ end
 --chi_ntf
 function GCMD.chi_ntf(idx,type,from,card)
 	local cmd = 'chi_ntf'
+	local data = {state = 0, chair=idx,type=type, from=from, card=card}
 	for i,u in pairs(___players) do
-		___data_ntf(u.agent,cmd,{state = 0, chair=idx,type=type, from=from, card=card})
+		___data_ntf(u.agent,cmd,data)
 	end	
+	___optrec_add(cmd,data)
 end
 -----------------------
 --peng_tip
@@ -733,9 +754,11 @@ end
 --peng_ntf
 function GCMD.peng_ntf(idx,type,from,card)
 	local cmd = 'peng_ntf'
+	local data = {state = 0, chair=idx,from=from, card=card}
 	for i,u in pairs(___players) do
-		___data_ntf(u.agent,cmd,{state = 0, chair=idx,from=from, card=card})
+		___data_ntf(u.agent,cmd,data)
 	end
+	___optrec_add(cmd,data)
 end	
 -----------------------
 --gang_tip
@@ -755,17 +778,21 @@ end
 --剔除隐私数据
 function GCMD.gang_ntf(idx,type,from,card)
 	local cmd = 'gang_ntf'
+	local data 			= {state = 0, chair=idx,type=type, from=from, card=card}
+	local data_privte 	= {state = 0, chair=idx,type=type, from=from, card=0}
 	for i,u in pairs(___players) do
 		if(idx==i) then
-			___data_ntf(u.agent,cmd,{state = 0, chair=idx,type=type, from=from, card=card})
+			___data_ntf(u.agent,cmd,data)
 		else
 			if(type==___OPT_TP_GANG_3) then
-				___data_ntf(u.agent,cmd,{state = 0, chair=idx,type=type, from=from, card=0})
+				___data_ntf(u.agent,cmd,data_privte)
 			else
-				___data_ntf(u.agent,cmd,{state = 0, chair=idx,type=type, from=from, card=card})
+				___data_ntf(u.agent,cmd,data)
 			end
 		end
 	end	
+	___optrec_add(cmd,data)
+
 end
 -----------------------
 --接牌操作提示
@@ -811,16 +838,19 @@ end
 --剔除隐私数据
 function GCMD.getcard_ntf(idx,pai)
 	local cmd = 'getcard_ntf'
+	local data 			= {chair = idx,card=pai}
+	local data_privte	= {chair = idx,card=0}
 	for i,u in pairs(___players) do
 		local _agent = u.agent
 		if(_agent) then
 			if(idx==i) then
-				___data_ntf(_agent,cmd,{chair = i,card=pai})
+				___data_ntf(_agent,cmd,data)
 			else
-				___data_ntf(_agent,cmd,{chair = i,card=0})
+				___data_ntf(_agent,cmd,data_privte)
 			end
 		end
 	end
+	___optrec_add(cmd,data)
 end
 -------------------------------------------
 --单局结算
@@ -828,15 +858,16 @@ function GCMD.report_ntf(tb)
 	local cmd = 'report_ntf'
 	for i,u in pairs(___players) do
 		___data_ntf(u.agent,cmd,tb)
-	end			
+	end
+	___optrec_add(cmd,data)		
 end
 --总结算
 function GCMD.final_report_ntf(tb)
 	local cmd = 'final_report_ntf'
 	for i,u in pairs(___players) do
 		___data_ntf(u.agent,cmd,tb)
-	end			
-
+	end	
+	___optrec_add(cmd,data)
 end
 -------------------------------------------
 -------------------------------------------
@@ -1680,15 +1711,22 @@ ___stepover = function(t)
 	util.dump(t,'___stepover result')
 
 	___report(t)
-
-	if(___gamestate.jushu+1 <= ___roomargs.jushu) then
+	if(___gamestate.jushu+1 <= ___roomargs.jushu) then	
 		___gamestate.jushu = ___gamestate.jushu+1
 		___change_banker(t)
 		___set_state(___ST_WAIT_READY)
+
+		___optrec_save()
+		___optrec_reset()
+		
 		__restart()
 	else
 		___final_report()
 		___set_state(___ST_END)
+
+		___optrec_save()
+		___optrec_clean()
+		
 		___end()
 	end
 end
@@ -1970,7 +2008,33 @@ end
 ___optclean = function()
 	___optrsp={}
 end
-
+--打牌记录
+___optrec_add = function(cmd,tb)
+	local data = ___sp:encode(cmd,tb)
+	local str = ___sp:request_encode('datadn',{type=___sptp,cmd=cmd,data=data})
+	local dstr = crypt.base64encode(str)
+	table.insert(___optrec.data,dstr)
+	-- local str = ___sp:request_decode("datadn", dstr)
+	-- local data = ___sp:request_decode("datadn", str)
+	-- local tb   = ___sp:decode(data.cmd, data.data)
+end
+--重置打牌记录
+___optrec_reset = function()
+	___optrec={}
+	___optrec.roomid = ___roomid
+	___optrec.jushu =  ___gamestate.jushu
+	___optrec.data = {}
+end
+--清楚打牌记录
+___optrec_clean = function()
+	___optrec={}
+end
+--存档
+___optrec_save  = function()
+	local roomid = ___optrec.roomid
+	local jushu = ___optrec.jushu
+	local cjson.encode(___optrec)
+end
 ---
 ----一局流程完成
 ----大框架完成k
@@ -1980,6 +2044,7 @@ end
 ----待完成
 --数据剔除处理，别人的数据剔除后再发
 --剔除隐私信息
+--出牌记录回放数据--只记录xxx_ntf 不用记录xxx_tip
 -------------------------------------------
 --测试到发牌出牌
 -------------------------------------------
