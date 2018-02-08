@@ -29,6 +29,16 @@ cp ../lua-cjson.Makefile Makefile
 make install
 cd ..
 ####################################################
+rm -rf luafilesystem
+git clone https://github.com/keplerproject/luafilesystem.git
+cd luafilesystem
+mv Makefile Makefile_origin
+cp ../lfs.Makefile Makefile
+make
+make install
+cd ..
+####################################################
+####################################################
 rm lsqlite3_fsl09x.zip
 rm -rf lsqlite3_fsl09x
 wget -O lsqlite3_fsl09x.zip http://lua.sqlite.org/index.cgi/zip/lsqlite3_fsl09x.zip\?uuid\=fsl_9x
