@@ -4,6 +4,7 @@ local proxy = require "socket_proxy"
 local util = require "util"
 
 local store_sqlite
+local store_mysql
 
 local sproto = require "sproto"
 local sprotoloader = require "sprotoloader"
@@ -250,6 +251,7 @@ skynet.start(function()
 
 	
 	store_sqlite = skynet.uniqueservice("store_sqlite")
+	store_mysql = skynet.uniqueservice("store_mysql")
 
 	skynet.dispatch('lua',function(session, source, cmd,...)
 		if(cmd=='init') then

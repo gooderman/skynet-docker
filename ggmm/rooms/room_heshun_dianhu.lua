@@ -4,9 +4,13 @@ local util = require 'util'
 local sproto = require "sproto"
 local sprotoloader = require "sprotoloader"
 local crypt = require "client.crypt"
+local lfs  = require "lfs"
+local store_mysql
+
 local DISMISS_WAIT_TIME = 30000
 local ___sp = nil
 local ___sptp = 10 --子协议类型
+local ___desc = '点胡麻将'
 ------------------------------------------------------------
 local ___roominfo = {}
 -- .Room {
@@ -2029,12 +2033,46 @@ end
 ___optrec_clean = function()
 	___optrec={}
 end
+
+local saverecfile = ___emptyfunc
 --存档
-___optrec_save  = function()
+___optrec_save  = function(rr)
 	local roomid = ___optrec.roomid
 	local jushu = ___optrec.jushu
-	local cjson.encode(___optrec)
+	local data = cjson.encode(___optrec)
+
+	local filename = string.format("%d_%02d.txt",roomid,jushu)	
+	local rec = {}
+	rec.roomid = roomid
+	rec.roomtype = ___sptp
+	rec.ownerid = ___roomowner
+	rec.renshu = ___roomargs.renshu
+	rec.jushu = jushu
+	rec.score = ''
+	rec.proto = filename
+	rec.desc  = ___desc
+	skynet.call(store_mysql,'lua','save_record',rec)
+
+	saverecfile(filename,data)
 end
+
+saverecfile = function(filename,data)
+	local path = skynet.getenv("RECORD_SAVE_PATH")
+	local fileptah = string.format("%s/%s",path,filename)
+	local mode  = lfs.attributes(path,'mode')
+	if(not mode) then
+		lfs.mkdir(path)
+	end
+	local file = io.open(fileptah,'w+b')
+	if(file) then
+		file:write(data)
+		file:close()
+		return true
+	end
+	return false
+end
+
+
 ---
 ----一局流程完成
 ----大框架完成k
@@ -2043,8 +2081,9 @@ end
 --听牌处理-报听和不报听处理
 ----待完成
 --数据剔除处理，别人的数据剔除后再发
---剔除隐私信息
---出牌记录回放数据--只记录xxx_ntf 不用记录xxx_tip
+--剔除隐私信息 --unfinish gamestart_ntf
+--出牌记录回放数据--只记录xxx_ntf 不用记录xxx_tip --unfinish savetodb
+--存档数据处理ID,name,score记录下来
 -------------------------------------------
 --测试到发牌出牌
 -------------------------------------------
@@ -2056,6 +2095,9 @@ skynet.start(function()
 	skynet.info_func(function()
 		return {st = ___step_st, line = ___step_info.currentline, func = ___step_info.name,roomid=___roomid,args = ___roomargstr}
 	end)
+	
+	store_mysql = skynet.uniqueservice("store_mysql")
+
 	skynet.dispatch('lua',function(session, source, cmd,...)
 		if(CMD[cmd]) then
 			local ff = CMD[cmd]

@@ -12,3 +12,4 @@ start = "main"
 LOGIN_WEB_PORT = 8080
 SQLITE_DB_FILE = proj .. "sqlite.db"
 UNQLITE_DB_FILE = proj .. "unqlite.db"
+RECORD_SAVE_PATH = proj .. "save_record"
