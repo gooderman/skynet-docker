@@ -3,7 +3,19 @@ local skynet = require "manager"
 local util = require "util"
 local ___agents={}
 local ___uids = {}
+local function agent_count()
+	local ct = 0
+	for k,_ in pairs(___agents) do
+		ct = ct + 1
+	end
+	return ct
+end
 skynet.start(function()
+
+	skynet.info_func(function()
+		return {agent_count = agent_count()}
+	end)
+	
 	skynet.dispatch('lua',function(session, source, cmd,...)
 		if(cmd=='add') then
 			local fd,addr,ip = ...

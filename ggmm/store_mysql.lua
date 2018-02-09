@@ -61,7 +61,7 @@ function command.init()
 			jushu int not null,
 			score varchar(256),
 			proto  varchar(128),
-			desc varchar(64),
+			name varchar(64),
 			time timestamp(4) default CURRENT_TIMESTAMP(4) not null
 		)AUTO_INCREMENT = 100001;
 	]]
@@ -118,6 +118,7 @@ function command.test()
 		jushu = 4,
 		score = '{id1:0,id2:100}',
 		proto = '/record/100001_3.txt',
+		name = '点胡麻将',
 	}
 	command.save_record(rec)
 	local dd = command.get_record(100001,4)
@@ -223,7 +224,7 @@ function command.del_user_byid(id)
 	return true
 end
 
-local sql_new_record = [[insert into record (roomid,roomtype,ownerid,renshu,jushu,score,proto,desc) values (%d,%d,%d,%d,%d,'%s','%s','%s')]]
+local sql_new_record = [[insert into record (roomid,roomtype,ownerid,renshu,jushu,score,proto,name) values (%d,%d,%d,%d,%d,'%s','%s','%s')]]
 function command.new_record(data)
 	skynet.error("mysql new_record ")
 	local sql = string.format(sql_new_record,
@@ -234,7 +235,7 @@ function command.new_record(data)
 		data.jushu,
 		data.score,
 		data.proto,
-		data.desc
+		data.name
 	)
 	local data = db:query(sql)
 	util.dump(data,'mysql new_record')

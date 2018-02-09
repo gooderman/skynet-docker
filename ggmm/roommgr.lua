@@ -23,10 +23,14 @@ local userroom={}
 ]]--
 
 local CMD = {}
-local roomid = 100000
+local roomid = 10000
 function CMD.gen_roomid()
-	roomid = roomid+1
-	return roomid
+	while(true) do
+		local id = 10000 + math.random(89999)
+		if(not rooms[id]) then
+			return id
+		end
+	end
 end
 
 function CMD.newroom(agent,user,data)
@@ -99,6 +103,16 @@ function CMD.getroom(agent,user)
 	return -1
 end
 
+function CMD.roomcount()
+	local ct = 0
+	for k,_ in pairs(rooms) do
+		if(k) then
+			ct = ct + 1
+		end
+	end
+	return ct
+end
+
 
 local NTF_CMD={}
 function NTF_CMD.ntf_dismiss(roomid)
@@ -114,6 +128,11 @@ function NTF_CMD.ntf_quit(uid)
 end
 
 skynet.start(function()
+
+	skynet.info_func(function()
+		return {room_count = CMD.roomcount()}
+	end)
+	
 	skynet.dispatch('lua',function(session, source, cmd,...)
 		if(CMD[cmd]) then
 			local ff = CMD[cmd]
@@ -125,4 +144,14 @@ skynet.start(function()
 		end
 	end)
 	skynet.register(".roommgr")
+
+	-- skynet.fork(function()
+	-- 	while(true) do
+	-- 		skynet.sleep(100)
+	-- 		local id = CMD.gen_roomid()
+	-- 		rooms[id] = 0
+	-- 		skynet.error('CMD.gen_roomid =',id)
+			
+	-- 	end
+	-- end)
 end)

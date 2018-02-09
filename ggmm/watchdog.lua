@@ -4,7 +4,7 @@ local test={}
 skynet.start(function()
 	local auth = skynet.queryservice('auth')
 	local agentMgr = skynet.queryservice('agentmgr')
-	local id = assert(socket.listen("127.0.0.1", 8888))
+	local id = assert(socket.listen("0.0.0.0", skynet.getenv('GAME_LISTEN_PORT')))
 	socket.start(id, function (fd, addr)
 		skynet.error(string.format("%s connected as %d" , addr, fd))
 		skynet.send(auth,'lua','auth',fd,addr)

@@ -8,8 +8,9 @@ pkill -9 skynet
 echo "\n\n\n---------start skynet---------"
 echo $1 $2 
 if [ $# == 0 ]; then
-./skynet/skynet ./gm/config.lua
+./skynet/skynet ./ggmm/config.lua
 else
-./skynet/skynet ./ggmm/config
+./skynet/skynet ./ggmm/config.lua
+./skynet/skynet ./ggmm/config_test.lua
 fi
 echo "-----------------------------"
