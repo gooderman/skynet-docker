@@ -5,6 +5,7 @@ local util = require "util"
 
 local store_sqlite
 local store_mysql
+local store_db
 
 local sproto = require "sproto"
 local sprotoloader = require "sprotoloader"
@@ -81,9 +82,9 @@ function COMMAND.heartbeat(data)
 	return t
 end
 function COMMAND.login(data)
-	local userdb = skynet.call(store_sqlite,'lua','get_user',data.user)
+	local userdb = skynet.call(store_db,'lua','get_user',data.user)
 	if(not userdb) then
-		userdb = skynet.call(store_sqlite,'lua','new_user',data.user)
+		userdb = skynet.call(store_db,'lua','new_user',data.user)
 	end
 	-- util.dump(data,'cmd.login')
 	if(userdb) then
@@ -252,6 +253,7 @@ skynet.start(function()
 	
 	store_sqlite = skynet.uniqueservice("store_sqlite")
 	store_mysql = skynet.uniqueservice("store_mysql")
+	store_db = store_mysql
 
 	skynet.dispatch('lua',function(session, source, cmd,...)
 		if(cmd=='init') then

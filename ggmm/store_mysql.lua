@@ -30,8 +30,8 @@ function command.init()
 	skynet.error("mysql success to connect to server")
 	
 	local res
-	res = db:query("drop table if exists user; drop table if exists record")
-	util.dump(res,'mysql init drop table user record')
+	-- res = db:query("drop table if exists user; drop table if exists record")
+	-- util.dump(res,'mysql init drop table user record')
 	
 	local sql_create_user =[[
 		create table if not exists user(
@@ -68,7 +68,7 @@ function command.init()
 	res = db:query(sql_create_record)
 	util.dump(res,'mysql create table record')
 
-	command.test()
+	-- command.test()
 
 end
 
@@ -264,7 +264,7 @@ end
 
 skynet.start(function()
 	skynet.dispatch("lua", function(session, address, cmd, ...)
-		local f = command[string.upper(cmd)]
+		local f = command[cmd]
 		if f then
 			skynet.ret(skynet.pack(f(...)))
 		else

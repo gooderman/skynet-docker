@@ -2,8 +2,13 @@ local skynet = require "skynet"
 local socket = require "skynet.socket"
 local crypt = require "skynet.crypt"
 local util = require "util"
+local cjson = require "cjson"
 
-local roomid,renshu = ...
+local roomtype = 10
+local uid,roomid,renshu = ...
+uid = tostring(uid)
+roomid = tonumber(roomid)
+renshu = tonumber(renshu)
 local rsp_get_roomid
 
 local sproto = require "sproto"
@@ -14,10 +19,12 @@ local send_request
 local decode_msg
 
 local fd = nil
+local sid = 1
 
 local function send_package(fd, pack)
 	local package = string.pack(">s2", pack)
 	socket.write(fd, package)
+	sid = sid+1
 end
 
 local function unpack_package(text)
@@ -59,15 +66,107 @@ local function dispatch_package()
 		return v
 	end
 end
-
 local CMD = {}
-CMD.auth = function(data)
-	local pack = send_request("auth",{key=crypt.base64encode(data.key)},1,'auth')
+local RMD = {}
+local GCMD = {}
+--接收
+RMD.auth = function(data)
+	local pack = send_request("auth",{key=crypt.base64encode(data.key)},sid,'auth')
+	send_package(fd,pack)
+	CMD.login()
+end
+RMD.login = function(data)
+	-- util.dump(data,'RMD.login')
+	if(data.state==0) then
+		if(roomid==0) then
+			CMD.newroom()
+		else
+			CMD.joinroom()
+			GCMD.ready()
+		end
+	end
+end
+RMD.newroom = function(data)
+	-- util.dump(data,'RMD.login')
+	if(data.state==0) then
+		roomid = data.room.id
+		if(rsp_get_roomid) then
+			rsp_get_roomid(true,roomid)
+		end
+		CMD.joinroom()
+		GCMD.ready()
+	end
+end
+RMD.datadn = function(data)
+	local t = data.type
+	local cmd = data.cmd
+	local data = sp:decode(cmd,data.data)
+	util.dump(data,'cmd-'..cmd)
+end
+---发送
+CMD.heartbeat = function()
+	local pack = send_request("heartbeat",{},sid,"heartbeat")
 	send_package(fd,pack)
 end
-CMD.heartbeat = function()
-	local pack = send_request("heartbeat",{},1,"heartbeat")
+
+CMD.login = function()
+	local req = {
+		user ={
+			openid = uid,
+			name = "user"..uid,
+			gender = math.random(1,2),
+			headimg  = "http://user_head.jpg",
+			platform  = "ios",
+			os  = 'ios11.0',
+			device = 'iphone-x',
+			uuid ='',
+		}
+	}
+	local pack = send_request("login",req,sid,"login")
 	send_package(fd,pack)
+end
+
+CMD.newroom = function()
+	local req = {
+		type = roomtype,
+		args = cjson.encode({
+			renshu = renshu,
+			jushu = 4,
+			wanfa = 1,
+			ting = true,
+			bao = true,
+			gangf = true,
+		})
+	}
+	local pack = send_request("newroom",req,sid,"newroom")
+	send_package(fd,pack)
+end
+CMD.joinroom = function()
+	local req = {
+		roomid = roomid
+	}
+	local pack = send_request("joinroom",req,sid,"joinroom")
+	send_package(fd,pack)
+end
+CMD.joinroom = function()
+	local req = {
+		roomid = roomid
+	}
+	local pack = send_request("joinroom",req,sid,"joinroom")
+	send_package(fd,pack)
+end
+CMD.dataup = function(cmd,data)
+	local req = {
+		type = roomtype,
+		cmd = cmd
+	}
+	req.data = sp:encode(cmd,data)
+	local pack = send_request("dataup",req,sid,"dataup")
+	send_package(fd,pack)
+end
+--------------------------
+GCMD.ready = function()
+	CMD.dataup('ready_req',{ready=1})
 end
 
 local function loop_heartbeat()
@@ -90,8 +189,8 @@ local function loop()
 			local cmd , data = decode_msg(p,string.len(p))
 			if(cmd~='heartbeat') then
 				util.dump(data,'dispatch_package '..cmd)
-				if(CMD[cmd]) then
-					CMD[cmd](data)
+				if(RMD[cmd]) then
+					RMD[cmd](data)
 				end
 			end
 			if(cmd=='auth') then
@@ -103,9 +202,9 @@ local function loop()
 end
 
 skynet.start(function(v)
-	skynet.error('robot====',roomid,renshu)
+	skynet.error('robot start ====',uid,roomid,renshu)
 
-	sp = sprotoloader.load(1)
+	sp = sprotoloader.load(roomtype)
 	host = sp:host('package')
 	send_request = host:attach(sp)
 	decode_msg = function(msg,sz)
@@ -123,9 +222,7 @@ skynet.start(function(v)
 	skynet.dispatch('lua', function(session, source, cmd,...)
 		if(cmd=='getroomid') then
 			if(roomid==0) then
-				rsp_get_roomid = skynet.response(function(id)
-					skynet.retpack(id)
-				end)
+				rsp_get_roomid = skynet.response()
 			else
 				skynet.retpack(roomid)
 			end
