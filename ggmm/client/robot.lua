@@ -186,6 +186,9 @@ end
 GCMD.pass_req = function()
 	CMD.dataup('pass_req',{})
 end
+GCMD.ting_req = function(isting,card)
+	CMD.dataup('ting_req',{isting=isting,card=card})
+end
 
 RGCMD.gamestart_ntf = function(data)
 	___game = data.game
@@ -261,10 +264,10 @@ RGCMD.opt_tip_self = function(data)
 		if(data.hu) then
 			ss = ss .. "胡-"
 		end
-		if(#data.gangxu>0) then
+		if(data.gangxu and #data.gangxu>0) then
 			ss = ss .. "杠X-"
 		end
-		if(#data.gangan>0) then
+		if(data.gangan and #data.gangan>0) then
 			ss = ss .. "杠A-"
 		end
 		--0,1,2-3-4,5,6-7-8,9,10 出 左吃-中吃-右吃 碰 明杠-续杠-暗杠 听 胡
@@ -272,6 +275,14 @@ RGCMD.opt_tip_self = function(data)
 		GCMD.pass_req()
 	end
 end
+RGCMD.ting_tip = function(data)
+	if(data.chair == ___chair) then
+		local card = ___cards.hand[1]
+		skynet.error('ting_req',___user.id,___chair,card)
+		GCMD.ting_req(false,card)
+	end
+end
+
 RGCMD.report_ntf = function(data)
 	skynet.timeout(500, function()
 		GCMD.ready()

@@ -1333,6 +1333,8 @@ ___step_self = function(pai)
 					GCMD.opt_tip_self(___optidx,pdata)
 				end
 			end
+
+			local ispass = false
 			while(true) do
 				skynet.wait()
 				local ok,data = ___optget(___ST_WAIT_HUGANG,___optidx)
@@ -1347,6 +1349,7 @@ ___step_self = function(pai)
 							GCMD.invalid_ntf(___optidx,___OPT_TP_HU,'#-can not hu-#')
 						end
 					elseif(data.pass) then
+						ispass = true
 						break
 					else
 						if(data.gang2) then
@@ -1380,6 +1383,9 @@ ___step_self = function(pai)
 				end	
 			end
 			___steprecover = ___emptyfunc
+			if(ispass) then
+				break
+			end
 		end
 	end
 	------------------再判断听牌 并 出牌------------------
