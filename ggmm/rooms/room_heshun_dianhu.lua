@@ -274,6 +274,9 @@ function CMD.init(info)
 	for i=1,___roomargs.renshu do
 		___finalreport[i] = ___sp:default("FinalReport")
 	end
+
+	___gamestate.jushu = 1
+	
 	___optrec_reset()
 	--启动打牌线程
 	___start()
@@ -644,7 +647,7 @@ function GCMD.chu_req(agent,data)
 	for i,u in pairs(___players) do
 		if(u.agent==agent) then
 			___optrsp_add(___OPT_TP_CHU,i,data)
-			skynet.error('room GCMD.chu_req',u.info.id,i)
+			skynet.error('room GCMD.chu_req',u.info.user.id,i)
 			break
 		end
 	end
@@ -672,7 +675,7 @@ function GCMD.ting_req(agent,data)
 	for i,u in pairs(___players) do
 		if(u.agent==agent) then
 			___optrsp_add(___OPT_TP_TING,i,data)
-			skynet.error('room GCMD.ting_req',u.info.id,i)
+			skynet.error('room GCMD.ting_req',u.info.user.id,i)
 			break
 		end
 	end
@@ -695,7 +698,7 @@ function GCMD.hu_req(agent,data)
 	for i,u in pairs(___players) do
 		if(u.agent==agent) then
 			___optrsp_add(___OPT_TP_HU,i,data)
-			skynet.error('room GCMD.hu_req',u.info.id,i)
+			skynet.error('room GCMD.hu_req',u.info.user.id,i)
 			break
 		end
 	end	
@@ -727,7 +730,7 @@ function GCMD.chi_req(agent,data)
 	for i,u in pairs(___players) do
 		if(u.agent==agent) then
 			___optrsp_add(data.type,i,data)
-			skynet.error('room GCMD.chi_req',u.info.id,i)
+			skynet.error('room GCMD.chi_req',u.info.user.id,i)
 			break
 		end
 	end		
@@ -750,7 +753,7 @@ function GCMD.peng_req(agent,data)
 	for i,u in pairs(___players) do
 		if(u.agent==agent) then
 			___optrsp_add(___OPT_TP_PENG,i,data)
-			skynet.error('room GCMD.peng_req',u.info.id,i)
+			skynet.error('room GCMD.peng_req',u.info.user.id,i)
 			break
 		end
 	end
@@ -773,7 +776,7 @@ function GCMD.gang_req(agent,data)
 	for i,u in pairs(___players) do
 		if(u.agent==agent) then
 			___optrsp_add(data.type,i,data)
-			skynet.error('room GCMD.gang_req',u.info.id,i)
+			skynet.error('room GCMD.gang_req',u.info.user.id,i)
 			break
 		end
 	end		
@@ -821,7 +824,7 @@ function GCMD.pass_req(agent,data)
 	for i,u in pairs(___players) do
 		if(u.agent==agent) then
 			___optrsp_add(___OPT_TP_PASS,i,data)
-			skynet.error('room GCMD.pass_req',u.info.id,i)
+			skynet.error('room GCMD.pass_req',u.info.user.id,i)
 			break
 		end
 	end		
@@ -863,7 +866,7 @@ function GCMD.report_ntf(tb)
 	for i,u in pairs(___players) do
 		___data_ntf(u.agent,cmd,tb)
 	end
-	___optrec_add(cmd,data)		
+	___optrec_add(cmd,tb)		
 end
 --总结算
 function GCMD.final_report_ntf(tb)
@@ -871,7 +874,7 @@ function GCMD.final_report_ntf(tb)
 	for i,u in pairs(___players) do
 		___data_ntf(u.agent,cmd,tb)
 	end	
-	___optrec_add(cmd,data)
+	___optrec_add(cmd,tb)
 end
 -------------------------------------------
 -------------------------------------------
@@ -1280,7 +1283,7 @@ ___waitcpg = function(r,abc,hh,gg,pp,cc)
 			end
 			break
 		end
-
+		isopttype,isoptidx = ___OPT_TP_PASS,0
 		break
 	end
 	return isopttype,isoptidx
@@ -1444,6 +1447,7 @@ ___step_self = function(pai)
 		while(true) do
 			skynet.wait()
 			local ok,chupai = ___optget(___ST_WAIT_CHU,___optidx)
+			skynet.error("___step_self ___optget ___ST_WAIT_CHU",ok,chupai)
 			if(ok) then
 				if(chupai) then
 					if(___room_baoting and cards.ting) then
@@ -1505,6 +1509,7 @@ ___step = function()
 		else
 			outcard = data.outcard
 		end
+		-- skynet.error('___step after ___step_self',outcard)
 		------------------自己已经出牌，再计算别人能否胡吃碰杠------------------
 		------------------别人吃碰杠以后循环处理------------------
 		--1,2-3-4,5,6-7-8,9,10 出 左吃-中吃-右吃 碰 明杠-续杠-暗杠 听 胡
@@ -1551,8 +1556,9 @@ ___step = function()
 				end
 			end
 			if(not hasopt) then
-				--没人能吃碰杠--下一家
+				--没人能吃碰杠--下一家发牌 
 				___optidx = abc[1]
+				outcard = nil
 				break
 			else	
 				--操作分类
@@ -1564,7 +1570,7 @@ ___step = function()
 				local gg={false,false,false,false}
 				local pp={false,false,false,false}
 				local cc={false,false,false,false}
-				for idx,t in ipairs(r) do
+				for idx,t in pairs(r) do				
 					for _, op in ipairs(t) do
 						if(op==___OPT_TP_HU) then
 							hh[idx] = -1
@@ -1578,7 +1584,7 @@ ___step = function()
 					end
 				end
 				--发送操作提示
-				for idx,t in ipairs(r) do
+				for idx,t in pairs(r) do
 					if(#t>0) then
 						local data = {
 							chair = idx,
@@ -1589,6 +1595,7 @@ ___step = function()
 						GCMD.opt_tip(idx,data)
 					end
 				end
+				util.dump(r,'cpg--r',6)
 				--清除操作堆栈
 				___optclean()
 				--等待回复
@@ -1611,15 +1618,22 @@ ___step = function()
 					skynet.wait()
 					--取所有的操作汇总处理
 					local ok,r = ___optgetcpg()
+					util.dump(r,'___optgetcpg')
 					if(not ok) then
 					else	
 						local isopttype = -1
 						local isoptidx = 0
 						--___waitcpg has check
 						isopttype, isoptidx = ___waitcpg(r,abc,hh,gg,pp,cc)
+						skynet.error('___waitcpg',isopttype,isoptidx)
 						--确定操作
 						if(isopttype<0 or isoptidx<0) then
 							--无法确定操作--循环等待
+						elseif(isopttype==___OPT_TP_PASS) then
+							--没人吃碰杠--下一家发牌
+							___optidx = abc[1]
+							outcard = nil
+							break
 						else
 							local pai
 							if(isopttype==___OPT_TP_HU) then
@@ -1647,7 +1661,7 @@ ___step = function()
 								GCMD.peng_ntf(isoptidx,isopttype,___optidx,outcard)
 							elseif(isopttype>=___OPT_TP_CHI_L and isopttype<=___OPT_TP_CHI_R) then
 								___do_opt(isoptidx,___optidx,isopttype,outcard)
-								GCMD.chi_ntf(isoptidx,isopttype,___optidx,outcard)
+								GCMD.chi_ntf(isoptidx,isopttype,___optidx,outcard)									
 							end
 							local oldoptidx = ___optidx
 							___optidx = isoptidx							
@@ -1675,7 +1689,6 @@ ___step = function()
 		___setst(___ST_FAPAI)
 
 		--堆栈空-开始下一轮发牌
-		return 1
 	end
 end
 ___setst = function(st)
@@ -1692,6 +1705,8 @@ ___restart = function()
 end
 ___end = function()
 	___costep = nil
+	skynet.error("___end to dismiss")
+	CMD.dismiss()
 end
 --结局
 -- {
@@ -1722,8 +1737,11 @@ ___stepover = function(t)
 
 		___optrec_save()
 		___optrec_reset()
-		
-		__restart()
+
+		for i,u in pairs(___players) do
+			u.info.ready = false
+		end
+		___restart()
 	else
 		___final_report()
 		___set_state(___ST_END)
@@ -1765,6 +1783,7 @@ ___report = function(t)
 		r.pao = false
 		r.score = 0
 		r.param = {}
+		r.cards = ___gamestate.cards[i]
 		info[i] = r
 	end
 	if(t.hu) then
@@ -1922,20 +1941,25 @@ local ___filtermap = {
 ___optrsp_add = function(opt,idx,data)
 	--当前操作者___optidx 和 idx比较
 	--决定是否接受
+	skynet.error('___optrsp_add_1',opt,idx)
 	local mapmap = ___filtermap[___step_st]
 	if(not mapmap) then
 		return
 	end
+	skynet.error('___optrsp_add_2')
+
 	-- if(___optidx==idx and mapmap[opt]) then
 	--不能限定___optidx，cpgh需要其他玩家的消息
 	if(mapmap[opt]) then
+		skynet.error('___optrsp_add_3')
 		table.insert(___optrsp,{
 			opt = opt,
 			idx = idx,
 			data = data
 		})
-	end		
+	end	
 	if(___costep) then
+		skynet.error('___optrsp_add_4')	
 		skynet.wakeup(___costep)
 	end
 end
@@ -1944,6 +1968,7 @@ end
 --idx获取指定的玩家，nil获取所有的
 --noclean 不自动清除堆栈
 ___optget = function(type,idx,noclean)
+	skynet.error('___optget_1',type,idx)
 	local map = ___filtermap[type]
 	if(not map) then	
 	 	assert(false,'___optget type=='..(type or 'nil'))	
@@ -1959,21 +1984,26 @@ ___optget = function(type,idx,noclean)
 	if( not noclean) then
 		___optclean()
 	end
+	skynet.error('___optget_2')
+
 	if(not r) then
 		return false
 	end
+	skynet.error('___optget_3')
+
 	--根据协议返回
 	local opt = r.opt
+	local data = r.data
 	if(type == ___ST_WAIT_CHU) then
-		return true,r.card
+		return true,data.card
 	elseif(type == ___ST_WAIT_HU) then
 		if(___OPT_TP_CHU == opt) then
-			return true, false, r.card
+			return true, false, data.card
 		elseif(___OPT_TP_HU == opt) then
 			return true, true, 0
 		end
 	elseif(type ==___ST_WAIT_TING) then
-		return true,r.isting,r.card
+		return true,data.isting,data.card
 	elseif(type ==___ST_WAIT_HUGANG) then
 		if(___OPT_TP_PASS == opt) then
 			return true, {hu = false, gang2 = false, gang3 = false, pass = true }
@@ -1989,6 +2019,7 @@ ___optget = function(type,idx,noclean)
 			return true, {ready = true}
 		end
 	end
+	skynet.error('___optget_4 false')
 	return false
 end
 --获取胡吃碰刚记录
@@ -1996,14 +2027,16 @@ end
 ___optgetcpg = function()
 	local n = #___optrsp
 	local r = {}
+	local has = false
 	for i=1,n do
 		local t = ___optrsp[i]
 		if(___cpgmap[t.opt]) then
 			r[t.idx] = t.opt
+			has = true
 		end
 	end
 	___optclean()
-	if(#r>0) then
+	if(has) then
 		return true,r
 	end
 	return false

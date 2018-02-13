@@ -2,11 +2,12 @@ local skynet = require "skynet"
 
 local function good()
 	local uid = 10000
-	for i=1,100 do
+	for i=1,1 do
 		local roomid = 0
-		local renshu = math.random(2,4)
+		local renshu = math.random(4,4)
+		local jushu = 3
 		for i=1,renshu do
-			local owner = skynet.newservice('robot',uid,roomid,renshu)
+			local owner = skynet.newservice('robot',uid,roomid,renshu,jushu)
 			if(roomid==0) then
 				skynet.error('new robot roomid 1== 0')
 				roomid = skynet.call(owner, 'lua', 'getroomid')

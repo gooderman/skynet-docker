@@ -9,6 +9,7 @@ cpath = root.."cservice/?.so"
 lua_path = root.."lualib/?.lua;"  ..root.."lualib/?/init.lua;"  ..root.."lualib/skynet/?.lua;"  ..package.."lualib/?.lua;"..proj.."?.lua;" ..proj.."?/main.lua;"
 lua_cpath = root.."luaclib/?.so"
 start = "main_test"
+logpath = proj .. "save_log"
 GAME_LISTEN_PORT = 8888
 LOGIN_WEB_PORT = 8080
 SQLITE_DB_FILE = proj .. "sqlite.db"

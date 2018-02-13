@@ -5,11 +5,17 @@ local util = require "util"
 local cjson = require "cjson"
 
 local roomtype = 10
-local uid,roomid,renshu = ...
+local uid,roomid,renshu,jushu = ...
 uid = tostring(uid)
 roomid = tonumber(roomid)
 renshu = tonumber(renshu)
+jushu = tonumber(jushu)
 local rsp_get_roomid
+
+local ___user = nil
+local ___chair = 0
+local ___game = nil
+local ___cards = nil
 
 local sproto = require "sproto"
 local sprotoloader = require "sprotoloader"
@@ -69,6 +75,7 @@ end
 local CMD = {}
 local RMD = {}
 local GCMD = {}
+local RGCMD = {}
 --接收
 RMD.auth = function(data)
 	local pack = send_request("auth",{key=crypt.base64encode(data.key)},sid,'auth')
@@ -78,6 +85,7 @@ end
 RMD.login = function(data)
 	-- util.dump(data,'RMD.login')
 	if(data.state==0) then
+		___user = data.user
 		if(roomid==0) then
 			CMD.newroom()
 		else
@@ -101,8 +109,12 @@ RMD.datadn = function(data)
 	local t = data.type
 	local cmd = data.cmd
 	local data = sp:decode(cmd,data.data)
-	util.dump(data,'cmd-'..cmd)
+	util.dump(data,'cmd-'..cmd,6)
+	if(RGCMD[cmd]) then
+		RGCMD[cmd](data)
+	end
 end
+
 ---发送
 CMD.heartbeat = function()
 	local pack = send_request("heartbeat",{},sid,"heartbeat")
@@ -131,7 +143,7 @@ CMD.newroom = function()
 		type = roomtype,
 		args = cjson.encode({
 			renshu = renshu,
-			jushu = 4,
+			jushu = jushu,
 			wanfa = 1,
 			ting = true,
 			bao = true,
@@ -168,7 +180,108 @@ end
 GCMD.ready = function()
 	CMD.dataup('ready_req',{ready=1})
 end
+GCMD.chu_req = function(card)
+	CMD.dataup('chu_req',{card=card})
+end
+GCMD.pass_req = function()
+	CMD.dataup('pass_req',{})
+end
 
+RGCMD.gamestart_ntf = function(data)
+	___game = data.game
+	local player = data.game.player
+	for _,v in pairs(player) do
+		if(v.user.id==___user.id) then
+			___chair = v.chair
+			break
+		end
+	end	
+
+	for _,v in pairs(data.game.state.cards) do
+		if(v.chair==___chair) then
+			___cards = v
+			break
+		end
+	end	
+	
+	skynet.error('gamestart_ntf',___user.id,___chair,#___cards.hand)
+end
+
+RGCMD.getcard_ntf = function(data)
+	if(data.chair==___chair) then
+		table.insert(___cards.hand,data.card)
+		skynet.error('getcard_ntf',___user.id,___chair,data.card)
+	end
+end
+RGCMD.chu_tip = function(data)
+	if(data.chair == ___chair) then
+		local card = ___cards.hand[1]
+		skynet.error('chu_req',___user.id,___chair,card)
+		GCMD.chu_req(card)
+	end
+end
+RGCMD.chu_ntf = function(data)
+	if(data.chair == ___chair) then
+		local card = data.card
+		for k,c in ipairs(___cards.hand) do
+			if (c==card) then
+				table.remove(___cards.hand,k)
+				skynet.error('chu_ntf',___user.id,___chair,card)
+				break
+			end
+		end
+	end
+end
+local opt_tps = {
+	'出','吃L','吃M','吃R','碰','杠M','杠X','杠A','听','胡',
+}
+RGCMD.opt_tip = function(data)
+	if(data.chair == ___chair) then
+		-- data.from
+		-- data.card
+		local tps = data.types
+		local card = data.card
+		local ss = ""
+		for _,v in ipairs(tps) do
+			ss =  (opt_tps[v] or v) .. "-"
+		end
+		--0,1,2-3-4,5,6-7-8,9,10 出 左吃-中吃-右吃 碰 明杠-续杠-暗杠 听 胡
+		skynet.error('opt_tip',___user.id,___chair,card,ss)
+		GCMD.pass_req()
+	end
+end
+RGCMD.opt_tip_self = function(data)
+	if(data.chair == ___chair) then
+    	-- data.chair
+    	-- data.hu
+    	-- data.gangxu
+    	-- data.gangan
+		local tps = data.types
+		local ss = ""
+		if(data.hu) then
+			ss = ss .. "胡-"
+		end
+		if(#data.gangxu>0) then
+			ss = ss .. "杠X-"
+		end
+		if(#data.gangan>0) then
+			ss = ss .. "杠A-"
+		end
+		--0,1,2-3-4,5,6-7-8,9,10 出 左吃-中吃-右吃 碰 明杠-续杠-暗杠 听 胡
+		skynet.error('opt_tip_self',___user.id,___chair,card,ss)
+		GCMD.pass_req()
+	end
+end
+RGCMD.report_ntf = function(data)
+	skynet.timeout(500, function()
+		GCMD.ready()
+	end)
+end
+
+
+
+
+--------------------------
 local function loop_heartbeat()
 	while(true) do
 		CMD.heartbeat()
