@@ -53,6 +53,11 @@ skynet.start(function()
 				end
 			end
 			___agents[fd] = nil
+		elseif(cmd=='killall') then
+			for _,addr in pairs(___agents) do
+				skynet.send(addr, 'lua','close', 'kill by manager')
+			end
+			skynet.retpack(true)
 		end
 	end)
 	skynet.register(".agentmgr")

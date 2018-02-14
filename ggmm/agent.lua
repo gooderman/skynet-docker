@@ -267,6 +267,8 @@ skynet.start(function()
 			skynet.retpack({fd=__fd,addr=__addr,ip=__ip})
 		elseif(cmd=='replaced') then
 			COMMAND.replaced(uid)
+		elseif(cmd=='close') then
+			COMMAND.close(...)
 		elseif(NTF_CMD[cmd]) then
 			skynet.retpack(NTF_CMD[cmd](...))
 		end

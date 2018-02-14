@@ -2,7 +2,7 @@ local skynet = require "skynet"
 
 local function good()
 	local uid = 10000
-	for i=1,20 do
+	for i=1,2 do
 		local roomid = 0
 		local renshu = math.random(3,4)
 		local jushu = math.random(2,4)
