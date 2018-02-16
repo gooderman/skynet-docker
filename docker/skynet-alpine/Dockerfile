@@ -1,24 +1,27 @@
-FROM ubuntu:16.04
+FROM alpine:3.7
 WORKDIR /app
-COPY  ./skynet_package_linux.Makefile ./skynet_package_linux.Makefile
-COPY  ./lfs_linux.Makefile ./lfs_linux.Makefile 
-COPY  ./lfs_linux_config ./lfs_linux_config 
-COPY  ./lua-cjson_linux.Makefile ./lua-cjson_linux.Makefile 
-COPY  ./lsqlite3_linux.Makefile ./lsqlite3_linux.Makefile 
+VOLUME /data
 ENV SKYNET_DEPS \
     bash \
     autoconf \
     wget \
     git \
     make \
-    gcc \
-    libreadline-dev \
+    g++ \
+    readline-dev \
     tar \
     unzip \
     tree
-    
+
+COPY ./skynet_package_linux.Makefile ./skynet_package_linux.Makefile
+COPY ./lfs_linux.Makefile ./lfs_linux.Makefile 
+COPY ./lfs_linux_config ./lfs_linux_config 
+COPY ./lua-cjson_linux.Makefile ./lua-cjson_linux.Makefile 
+COPY ./lsqlite3_linux.Makefile ./lsqlite3_linux.Makefile     
+COPY ./skynet_package_diff ./skynet_package_diff
+
 RUN  \
-	apt update && yes | apt install ${SKYNET_DEPS} \
+	apk update && yes | apk add --update --no-cache ${SKYNET_DEPS} \
 	&& git clone https://github.com/cloudwu/skynet \
 	&& cd skynet \
 	&& make linux \
@@ -27,6 +30,8 @@ RUN  \
 	&& cd skynet_package \	
 	&& mv Makefile Makefile_origin \
 	&& cp ../skynet_package_linux.Makefile Makefile \
+	&& mv lualib/socket_proxy.lua lualib/socket_proxy_origin.lua \
+	&& cp -f ../skynet_package_diff/lualib/socket_proxy.lua lualib/socket_proxy.lua \
 	&& make \
 	&& cd .. \
 	&& git clone https://github.com/keplerproject/luafilesystem.git \
@@ -52,6 +57,9 @@ RUN  \
 	&& cp ../lsqlite3_linux.Makefile Makefile \
 	&& make \
 	&& cd ..
+	
+
+ENTRYPOINT ["/data/start.sh"]	
 
 
 
