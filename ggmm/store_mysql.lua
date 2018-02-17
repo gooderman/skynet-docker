@@ -5,7 +5,8 @@ local util = require 'util'
 
 local db = nil
 local conf={
-	host="127.0.0.1",
+	-- host="127.0.0.1",
+	host = skynet.getenv('DB_MYSQL_IP'),--docker mymysql
 	port=3306,
 	database="skynet",
 	user="root",

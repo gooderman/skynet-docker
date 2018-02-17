@@ -10,7 +10,7 @@ local store_unqlite
 local store_mysql
 local majiang
 skynet.start(function()
-	skynet.newservice("debug_console",8000)
+	skynet.newservice("debug_console",skynet.getenv("DEBUG_CONSOLE_IP"),8000)
 
 	skynet.newservice("httplistener", skynet.getenv("LOGIN_WEB_PORT"))
 

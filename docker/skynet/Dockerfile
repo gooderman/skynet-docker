@@ -1,10 +1,6 @@
 FROM ubuntu:16.04
 WORKDIR /app
-COPY  ./skynet_package_linux.Makefile ./skynet_package_linux.Makefile
-COPY  ./lfs_linux.Makefile ./lfs_linux.Makefile 
-COPY  ./lfs_linux_config ./lfs_linux_config 
-COPY  ./lua-cjson_linux.Makefile ./lua-cjson_linux.Makefile 
-COPY  ./lsqlite3_linux.Makefile ./lsqlite3_linux.Makefile 
+VOLUME /data
 ENV SKYNET_DEPS \
     bash \
     autoconf \
@@ -16,6 +12,13 @@ ENV SKYNET_DEPS \
     tar \
     unzip \
     tree
+
+COPY ./skynet_package_linux.Makefile ./skynet_package_linux.Makefile
+COPY ./lfs_linux.Makefile ./lfs_linux.Makefile 
+COPY ./lfs_linux_config ./lfs_linux_config 
+COPY ./lua-cjson_linux.Makefile ./lua-cjson_linux.Makefile 
+COPY ./lsqlite3_linux.Makefile ./lsqlite3_linux.Makefile     
+COPY ./skynet_package_diff ./skynet_package_diff
     
 RUN  \
 	apt update && yes | apt install ${SKYNET_DEPS} \
@@ -52,6 +55,8 @@ RUN  \
 	&& cp ../lsqlite3_linux.Makefile Makefile \
 	&& make \
 	&& cd ..
+
+ENTRYPOINT ["/data/start.sh"]	
 
 
 

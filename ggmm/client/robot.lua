@@ -301,7 +301,7 @@ local function loop_heartbeat()
 end
 
 local function loop()
-	fd = socket.open('127.0.0.1', skynet.getenv('GAME_LISTEN_PORT'))
+	fd = socket.open(skynet.getenv('GAME_SERVER_IP'), skynet.getenv('GAME_LISTEN_PORT'))
 	skynet.error('socket open ',fd)
 	if(not fd) then
 		return
