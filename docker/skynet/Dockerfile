@@ -3,15 +3,24 @@ WORKDIR /app
 VOLUME /data
 ENV SKYNET_DEPS \
     bash \
+    ca-certificates \
     autoconf \
     wget \
     git \
     make \
-    gcc \
+    g++ \
     libreadline-dev \
-    tar \
-    unzip \
-    tree
+    unzip
+
+ENV REMOVE_DEPS \  
+	ca-certificates \
+    autoconf \
+    wget \
+    git \
+    make \
+    g++ \
+    libreadline-dev \
+    unzip
 
 COPY ./skynet_package_linux.Makefile ./skynet_package_linux.Makefile
 COPY ./lfs_linux.Makefile ./lfs_linux.Makefile 
@@ -21,16 +30,18 @@ COPY ./lsqlite3_linux.Makefile ./lsqlite3_linux.Makefile
 COPY ./skynet_package_diff ./skynet_package_diff
     
 RUN  \
-	apt update && yes | apt install ${SKYNET_DEPS} \
+	apt update && yes | apt install --no-install-recommends ${SKYNET_DEPS} \
 	&& git clone https://github.com/cloudwu/skynet \
 	&& cd skynet \
 	&& make linux \
+	&& rm -rf .git \	
 	&& cd .. \
-	&& git clone http://github.com/cloudwu/skynet_package \
+	&& git clone https://github.com/cloudwu/skynet_package \
 	&& cd skynet_package \	
 	&& mv Makefile Makefile_origin \
 	&& cp ../skynet_package_linux.Makefile Makefile \
 	&& make \
+	&& rm -rf .git \	
 	&& cd .. \
 	&& git clone https://github.com/keplerproject/luafilesystem.git \
 	&& cd luafilesystem \
@@ -54,7 +65,14 @@ RUN  \
 	&& mv Makefile Makefile_origin \
 	&& cp ../lsqlite3_linux.Makefile Makefile \
 	&& make \
-	&& cd ..
+	&& cd .. \
+	&& rm -rf skynet/3rd \
+	&& rm -rf luafilesystem \
+	&& rm -rf lua-cjson \
+	&& rm -rf lsqlite3_fsl09x \
+	&& rm -f lsqlite3_fsl09x.zip \
+	&& apt remove -y ${REMOVE_DEPS} \
+	&& rm -rf /var/lib/apt/lists/*
 
 ENTRYPOINT ["/data/start.sh"]	
 
