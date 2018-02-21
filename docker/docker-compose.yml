@@ -79,7 +79,8 @@ services:
         target: /data
     depends_on:
       - mysql
-      - redis  
+      - redis
+      - openresty
     networks:
       mynet:
         aliases:

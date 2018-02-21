@@ -17,3 +17,6 @@ lsqlite3_fsl09x
 deps/skynet_package/
 
 docker/openresty/boot.zip
+access.log
+error.log
+V103-V102-001.zip
