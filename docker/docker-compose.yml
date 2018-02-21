@@ -1,0 +1,105 @@
+version: '3.2'
+
+services:
+
+  mysql:
+    image: mysql:5.7
+    container_name: mymysql
+    ports: 
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: '123456'
+      MYSQL_DATABASE: 'skynet'
+    volumes:
+      - type: bind
+        source: ./mysql/data
+        target: /var/lib/mysql 
+    networks:
+      mynet:
+        aliases:
+          - mymysql
+
+  redis:
+    image: redis:alpine
+    container_name: myredis
+    ports: 
+      - "6379:6379"
+    volumes:
+      - type: bind
+        source: ./redis/data
+        target: /data
+      - type: bind
+        source: ./redis/conf
+        target: /conf
+    command: "/conf/redis.conf"
+    networks:
+      mynet:
+        aliases:
+          - myredis
+
+  openresty:
+    image: openresty/openresty:alpine
+    container_name: myresty
+    ports: 
+      - "80:80"
+    volumes:
+      - type: bind
+        source: ./openresty/script
+        target: /script
+      - type: bind
+        source: ./openresty/data
+        target: /data
+      - type: bind
+        source: ./openresty/html
+        target: /usr/local/openresty/nginx/html  
+      - type: bind
+        source: ./openresty/config/nginx.conf
+        target: /usr/local/openresty/nginx/conf/nginx.conf
+      - type: bind
+        source: ./openresty/logs
+        target: /usr/local/openresty/nginx/logs  
+    depends_on:
+      - mysql
+      - redis  
+    networks:
+      mynet:
+        aliases:
+          - myresty
+
+  skynet:
+    image: whatoon/skynet-alpine
+    container_name: myskynet
+    ports: 
+      - "8000:8000"
+      - "8080:8080"
+      - "8888:8888"
+    volumes:
+      - type: bind
+        source: ./skynet-alpine
+        target: /data
+    depends_on:
+      - mysql
+      - redis  
+    networks:
+      mynet:
+        aliases:
+          - myskynet     
+
+  test:
+    image: whatoon/skynet-alpine
+    container_name: myskynet_test
+    command: "1"
+    volumes:
+      - type: bind
+        source: ./skynet-alpine
+        target: /data
+    depends_on:
+      - skynet
+    networks:
+      mynet:
+        aliases:
+          - myskynet_test                
+
+networks:
+  mynet:
+    driver: bridge

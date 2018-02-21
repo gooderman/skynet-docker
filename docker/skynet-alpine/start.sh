@@ -8,6 +8,8 @@ ping mymysql -c 4
 else
 # /app/skynet/skynet /data/GMA/config.lua & 
 # sleep 2s
+echo 'ping mysql'
+ping mymysql -c 8
 echo 'ping myskynet'
 ping myskynet -c 4
 /app/skynet/skynet /data/GMA/config_test.lua
