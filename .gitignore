@@ -20,3 +20,5 @@ docker/openresty/boot.zip
 access.log
 error.log
 V103-V102-001.zip
+
+GMA/save_record/*.txt

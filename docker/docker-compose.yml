@@ -2,6 +2,23 @@ version: '3.2'
 
 services:
 
+  ftp:
+    image: bogem/ftp #fauria/vsftpd
+    container_name: myftp
+    ports: 
+      - "20:20"
+      - "21:21"
+      - "47400-47470:47400-47470" #cannot change by bogem/ftp
+    environment:
+      FTP_USER: test
+      FTP_PASS: test
+      PASV_ADDRESS: 0.0.0.0
+    restart: always
+    volumes:
+      - type: bind
+        source: ./ftp
+        target: /home/vsftpd
+
   mysql:
     image: mysql:5.7
     container_name: mymysql
